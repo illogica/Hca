@@ -17,7 +17,7 @@ Window {
         onStatusChanged: if (socket.status == WebSocket.Error) {
                              console.log("Error: " + socket.errorString)
                          } else if (socket.status == WebSocket.Open) {
-                             socket.sendTextMessage("Hello World")
+                             socket.sendTextMessage('{{"ra":"0"}')
                          } else if (socket.status == WebSocket.Closed) {
                              txt.text += "\nSocket closed"
                          }
@@ -27,7 +27,8 @@ Window {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            Qt.quit();
+            //Qt.quit();
+            socket.active = !socket.active
         }
     }
 

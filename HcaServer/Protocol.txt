@@ -1,0 +1,48 @@
+Users are collected in Rooms
+
+User // the fundamental user type
+    id
+    name
+    websocket
+    list<Conversation> conversations //private conversations
+    ...
+
+Room // Users gather in rooms to exchange data
+    id
+    name
+    list<User> users
+    owner
+    list<User> masters
+    list<Conversation> conversations
+
+World // a collection of rooms
+    id
+    name
+    list<Room> rooms
+
+Users can only exchange messages
+Message // the atomic type of communication
+    id
+    body
+    from
+    to
+    timestamp
+
+Conversation // a collection of messages
+    id
+    creationtimestamp
+    author
+    list<User> users
+    list<Message> messages
+
+
+Server listens for incoming connections
+Client connects
+    Client socket gets saved in a limbo list
+    Socket in the limbo sends a request:
+        if request contains new user request
+            generate a new user
+        else request contains a user Id
+            load the user with that id
+        take the socket from the limbo and put it into the user
+        add the user to the list of users

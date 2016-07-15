@@ -15,4 +15,8 @@ SOURCES += main.cpp \
 
 HEADERS += \
     hcaserver.h \
-    client.h
+    client.h \
+    protocol.h
+
+DISTFILES += \
+    Protocol.txt

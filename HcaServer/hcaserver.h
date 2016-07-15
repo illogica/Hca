@@ -5,7 +5,10 @@
 #include <QWebSocketServer>
 #include <QWebSocket>
 #include <QDebug>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include "client.h"
+#include "protocol.h"
 
 class HcaServer : public QObject
 {
@@ -26,7 +29,7 @@ public slots:
 private:
     QWebSocketServer *socketServer;
     QList<Client *> clients;
-    QList<QWebSocket *> sockets;
+    QList<QWebSocket *> limbo; //list of websockets without a user
 };
 
 #endif // HCASERVER_H
