@@ -53,3 +53,9 @@ Client connects
             load the user
         take the socket from the limbo and put it into the user
         add the user to the list of users
+
+Connected client wants to join/create a room
+    Sends the server a JOIN_ROOM request
+        if room doesn't exist, create it
+        add client to the room
+

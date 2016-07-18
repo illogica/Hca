@@ -23,8 +23,11 @@ public:
     void setSocket(QWebSocket *socket);
 
 signals:
+    void queueTextMessage(const QString &message);
 
 public slots:
+    void sendTextMessage(const QString &message);
+
     //void setSocket(QWebSocket *sck){this->socket = sck;}
 
 private:

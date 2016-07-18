@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include <QUuid>
 #include "client.h"
+#include "room.h"
 #include "protocol.h"
 
 class HcaServer : public QObject
@@ -18,11 +19,18 @@ public:
     const int PORT = 8081;
 
     void init();
+
     Client *findClient(QUuid uuid);
     Client *findClient(QWebSocket *websocket);
     Client *createClient();
 
+    Room *findRoom(const QString &name);
+    Room *createRoom();
+
+    QJsonDocument makeErrorMessage(const QString &error);
+
 signals:
+    void sendTextMessage(const QString &message);
 
 public slots:
     void onNewConnection();
@@ -36,6 +44,7 @@ private:
     QWebSocketServer *socketServer;
     QList<Client *> onlineClients;
     QList<QWebSocket *> limbo; //list of websockets without a user
+    QList<Room *> rooms;
 };
 
 #endif // HCASERVER_H

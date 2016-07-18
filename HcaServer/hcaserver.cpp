@@ -42,6 +42,20 @@ Client *HcaServer::createClient()
     return c;
 }
 
+Room *HcaServer::findRoom(const QString &name)
+{
+    for(Room *r : rooms){
+        if(r->name() == name)
+            return r;
+    }
+    return nullptr;
+}
+
+Room *HcaServer::createRoom()
+{
+    return new Room();
+}
+
 void HcaServer::onNewConnection()
 {
     QWebSocket *socket = socketServer->nextPendingConnection();
@@ -83,6 +97,7 @@ void HcaServer::onTextMessage(QString msg)
         socket->sendTextMessage(doc.toJson());
     }
         break;
+
     case LOGIN:
     {
         //Extract data from the json request
@@ -104,10 +119,40 @@ void HcaServer::onTextMessage(QString msg)
         response[UUID] = c->uuid().toString();
         QJsonDocument doc;
         doc.setObject(response);
-        socket->sendTextMessage(doc.toJson());
+        emit c->queueTextMessage(doc.toJson());
 
         qWarning() << "Online clients: " << onlineClients.size();
     }
+        break;
+
+    case JOIN_ROOM:
+    {
+        Client *c = findClient(socket);
+        if(!c){
+            socket->sendTextMessage(makeErrorMessage("Client not found"));
+            return;
+        }
+
+        QString roomName = docObj[ROOM_NAME].toString();
+        Room *r = findRoom(roomName);
+        if(!r){
+            r = createRoom();
+            r->setName(roomName);
+            r->setOwner(c);
+        }
+
+        /*FINIRE QUI CAZZO*/
+        QJsonObject response;
+        response[REQUEST] = LOGIN;
+        response[NAME] = c->name();
+        response[UUID] = c->uuid().toString();
+        QJsonDocument doc;
+        doc.setObject(response);
+        emit c->queueTextMessage(doc.toJson());
+
+        qWarning() << "Online clients: " << onlineClients.size();
+    }
+        break;
 
     case PONG:
         break;
@@ -116,7 +161,6 @@ void HcaServer::onTextMessage(QString msg)
     }
 
     qWarning() << "Request evaded in " << totalTime.elapsed() << "ms";
-    //socket->sendTextMessage(msg);
 }
 
 void HcaServer::onSocketDisconnected()
@@ -126,4 +170,14 @@ void HcaServer::onSocketDisconnected()
     limbo.removeOne(socket); //even if it's not there
     onlineClients.removeOne(findClient(socket));
     qWarning() << "Online clients: " << onlineClients.size();
+}
+
+QJsonDocument HcaClient::makeError(const QString &error)
+{
+    QJsonObject response;
+    response[REQUEST] = ERROR;
+    response[ERROR_BODY] = error;
+    QJsonDocument doc;
+    doc.setObject(response);
+    return doc;
 }

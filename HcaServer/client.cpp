@@ -5,6 +5,7 @@ quint32 Client::idCounter = 0;
 Client::Client(QObject *parent) : QObject(parent)
 {
     id = idCounter++;
+    connect(this, &Client::queueTextMessage, this, &Client::sendTextMessage);
 }
 
 QUuid Client::uuid() const
@@ -35,5 +36,10 @@ QWebSocket *Client::socket() const
 void Client::setSocket(QWebSocket *socket)
 {
     m_socket = socket;
+}
+
+void Client::sendTextMessage(const QString &message)
+{
+    m_socket->sendTextMessage(message);
 }
 
