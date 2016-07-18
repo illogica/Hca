@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QWebSocketServer>
 #include <QWebSocket>
-#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "client.h"

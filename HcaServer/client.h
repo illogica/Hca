@@ -13,6 +13,8 @@ public:
     QString name;
     QWebSocket *socket;
 
+    static quint32 idCounter;
+
 signals:
 
 public slots:

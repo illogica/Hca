@@ -1,40 +1,48 @@
 import QtQuick 2.5
-import QtQuick.Window 2.2
-import QtWebSockets 1.0
+//import QtQuick.Window 2.2
+import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.3
 
-Window {
+ApplicationWindow{
+    id: root
     visible: true
     width: 640
     height: 480
     title: qsTr("Hello World")
 
-    WebSocket {
-        id: socket
-        url: "ws://localhost:8081"
-        onTextMessageReceived: {
-            txt.text = txt.text + "\nReceived message: " + message
-        }
-        onStatusChanged: if (socket.status == WebSocket.Error) {
-                             console.log("Error: " + socket.errorString)
-                         } else if (socket.status == WebSocket.Open) {
-                             socket.sendTextMessage('{{"ra":"0"}')
-                         } else if (socket.status == WebSocket.Closed) {
-                             txt.text += "\nSocket closed"
-                         }
-        active: false
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            //Qt.quit();
-            socket.active = !socket.active
+    menuBar: MenuBar {
+        Menu {
+            title: "File"
+            MenuItem { text: "Open..." }
+            MenuItem {
+                text: "Close"
+                onTriggered: Qt.quit()
+            }
         }
     }
 
-    Text {
-        id: txt
-        text: qsTr("Hello World")
-        anchors.centerIn: parent
+    toolBar:ToolBar {
+        RowLayout {
+            anchors.fill: parent
+            Button {
+                id: buttonQuit
+                text: "Quit"
+                onClicked: Qt.quit()
+            }
+
+            Item { Layout.fillWidth: true }
+            CheckBox {
+                text: "Enabled"
+                checked: true
+                Layout.alignment: Qt.AlignRight
+            }
+        }
+    }
+
+    statusBar: StatusBar {
+        RowLayout {
+            anchors.fill: parent
+            Label { text: "Status bar" }
+        }
     }
 }

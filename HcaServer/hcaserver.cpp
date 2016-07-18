@@ -1,4 +1,5 @@
 #include "hcaserver.h"
+#include <QElapsedTimer>
 
 HcaServer::HcaServer(QObject *parent) : QObject(parent)
 {
@@ -11,7 +12,7 @@ void HcaServer::init()
     if(socketServer->listen(QHostAddress::Any, PORT)){
         connect(socketServer, &QWebSocketServer::newConnection, this, &HcaServer::onNewConnection);
         connect(socketServer, &QWebSocketServer::closed, this, &HcaServer::onConnectionClosed);
-        qDebug() << "Server listening on port " << PORT;
+        qWarning() << "Server listening on port " << PORT;
     }
 }
 
@@ -21,18 +22,21 @@ void HcaServer::onNewConnection()
     connect(socket, &QWebSocket::textMessageReceived, this, &HcaServer::onTextMessage);
     connect(socket, &QWebSocket::disconnected, this, &HcaServer::onSocketDisconnected);
     limbo << socket;
-    qDebug() << "Added client" << socket->peerName() << ":" << socket->peerPort();
+    qWarning() << "Added socket to the limbo" << socket->peerName() << ":" << socket->peerPort();
 }
 
 void HcaServer::onConnectionClosed()
 {
-    qDebug() << "Connection closed.";
+    qWarning() << "Connection closed.";
 }
 
 void HcaServer::onTextMessage(QString msg)
 {
+    QElapsedTimer totalTime;
+    totalTime.start();
+
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
-    qDebug() << "received: " << msg << "from " << socket->peerName();
+    qWarning() << "received: " << msg << "from " << socket->peerName();
 
     //Json
     QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
@@ -45,18 +49,27 @@ void HcaServer::onTextMessage(QString msg)
     int r = docObj["r"].toInt();
     switch(r){
     case PING:
-        qDebug() << "sent ping";
+    {
+        QJsonObject response;
+        response["r"] = PONG;
+        QJsonDocument doc;
+        doc.setObject(response);
+        socket->sendTextMessage(doc.toJson());
+    }
+        break;
+    case PONG:
         break;
     default:
-        qDebug() << "unrecognized command";
+        qWarning() << "unrecognized command";
     }
 
-    socket->sendTextMessage(msg);
+    qWarning() << "Request evaded in " << totalTime.elapsed() << "ms";
+    //socket->sendTextMessage(msg);
 }
 
 void HcaServer::onSocketDisconnected()
 {
-    qDebug() << "disconnected.";
+    qWarning() << "disconnected.";
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
     limbo.removeOne(socket);
 }

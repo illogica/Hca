@@ -26,14 +26,20 @@ Message // the atomic type of communication
     body
     from
     to
-    timestamp
+    dateTime
 
 Conversation // a collection of messages
     id
     creationtimestamp
-    author
     list<User> users
     list<Message> messages
+
+Example c2s or s2c message:
+{
+    r:PING      // request
+    m: "String containing a message
+    i: <id>      // int
+}
 
 
 Server listens for incoming connections

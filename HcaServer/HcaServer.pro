@@ -11,12 +11,20 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     hcaserver.cpp \
-    client.cpp
+    client.cpp \
+    message.cpp \
+    conversation.cpp \
+    room.cpp \
+    world.cpp
 
 HEADERS += \
     hcaserver.h \
     client.h \
-    protocol.h
+    protocol.h \
+    message.h \
+    conversation.h \
+    room.h \
+    world.h
 
 DISTFILES += \
     Protocol.txt

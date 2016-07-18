@@ -1,9 +1,10 @@
 TEMPLATE = app
 
-QT += qml quick
+QT += qml quick websockets
 CONFIG += c++11
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    hcaclient.cpp
 
 RESOURCES += qml.qrc
 
@@ -12,3 +13,6 @@ QML_IMPORT_PATH =
 
 # Default rules for deployment.
 include(deployment.pri)
+
+HEADERS += \
+    hcaclient.h
