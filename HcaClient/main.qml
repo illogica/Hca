@@ -22,6 +22,7 @@ ApplicationWindow{
     }
 
     toolBar:ToolBar {
+        id: myToolbar
         RowLayout {
             anchors.fill: parent
             Button {
@@ -32,17 +33,33 @@ ApplicationWindow{
 
             Item { Layout.fillWidth: true }
             CheckBox {
-                text: "Enabled"
-                checked: true
+                text: "Connected"
+                checked: false
                 Layout.alignment: Qt.AlignRight
+                onCheckedChanged: {
+                    checked ? HcaClient.connected=true : HcaClient.connected=true
+                }
             }
         }
     }
 
     statusBar: StatusBar {
+        id: myStatusbar
         RowLayout {
             anchors.fill: parent
-            Label { text: "Status bar" }
+            Label { text: HcaClient.connected ? "Connected" : "Not connected" }
+        }
+    }
+
+    ColumnLayout {
+        id: columnLayout1
+
+        anchors.fill: contentItem
+
+        Button {
+            id: buttonLogin
+            text: qsTr("Login")
+            onClicked: HcaClient.sendLogin();
         }
     }
 }
