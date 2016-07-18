@@ -92,7 +92,7 @@ void HcaClient::setConnected(bool cntd)
 QJsonDocument HcaClient::makePing()
 {
     QJsonObject response;
-    response["r"] = PONG;
+    response[REQUEST] = PONG;
     QJsonDocument doc;
     doc.setObject(response);
     return doc;
