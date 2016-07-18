@@ -7,6 +7,10 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+    QCoreApplication::setOrganizationName("Illogica");
+    QCoreApplication::setOrganizationDomain("Illogicasoftware.com");
+    QCoreApplication::setApplicationName("Hca Client");
+
     HcaClient *client = new HcaClient();
 
     QQmlApplicationEngine engine;

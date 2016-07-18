@@ -3,17 +3,24 @@
 
 #include <QObject>
 #include <QWebSocket>
+#include <QUuid>
 
 class Client : public QObject
 {
     Q_OBJECT
 public:
     explicit Client(QObject *parent = 0);
-    quint32 id;
-    QString name;
-    QWebSocket *socket;
 
     static quint32 idCounter;
+
+    QUuid uuid() const;
+    void setUuid(const QUuid &uuid);
+
+    QString name() const;
+    void setName(const QString &name);
+
+    QWebSocket *socket() const;
+    void setSocket(QWebSocket *socket);
 
 signals:
 
@@ -21,6 +28,10 @@ public slots:
     //void setSocket(QWebSocket *sck){this->socket = sck;}
 
 private:
+    quint32 id;
+    QUuid m_uuid;
+    QString m_name;
+    QWebSocket *m_socket;
 
 };
 

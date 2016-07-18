@@ -6,6 +6,7 @@
 #include <QWebSocket>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QUuid>
 #include "client.h"
 #include "protocol.h"
 
@@ -15,7 +16,11 @@ class HcaServer : public QObject
 public:
     explicit HcaServer(QObject *parent = 0);
     const int PORT = 8081;
+
     void init();
+    Client *findClient(QUuid uuid);
+    Client *findClient(QWebSocket *websocket);
+    Client *createClient();
 
 signals:
 
@@ -26,8 +31,10 @@ public slots:
     void onSocketDisconnected();
 
 private:
+    QList<Client *> clients; //to be put to REST
+
     QWebSocketServer *socketServer;
-    QList<Client *> clients;
+    QList<Client *> onlineClients;
     QList<QWebSocket *> limbo; //list of websockets without a user
 };
 

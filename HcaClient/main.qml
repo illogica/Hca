@@ -37,7 +37,7 @@ ApplicationWindow{
                 checked: false
                 Layout.alignment: Qt.AlignRight
                 onCheckedChanged: {
-                    checked ? HcaClient.connected=true : HcaClient.connected=true
+                    checked ? HcaClient.connected=true : HcaClient.connected=false
                 }
             }
         }

@@ -1,6 +1,11 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
+#define REQUEST "r"
+#define EMAIL "e"
+#define UUID "i"
+#define NAME "n"
+
 enum Request{
     ERROR =0,
     PING,

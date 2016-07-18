@@ -1,10 +1,12 @@
 #include "hcaclient.h"
+#include "QUuid"
 #include "../HcaServer/protocol.h"
 
 HcaClient::HcaClient(QObject *parent) : QObject(parent)
 {
     connect(&socket, &QWebSocket::connected, this, &HcaClient::onConnected);
     connect(&socket, &QWebSocket::disconnected, this, &HcaClient::onDisconnected);
+    connect(&socket, &QWebSocket::textMessageReceived, this, &HcaClient::parseServerMessage);
     //connect();
 }
 
@@ -17,7 +19,7 @@ void HcaClient::onConnected()
     qWarning() << "onConnected()";
     m_connected = true;
     emit connectedChanged(true);
-    socket.sendTextMessage(makePing().toJson());
+    socket.sendTextMessage(makePing().toJson(QJsonDocument::Compact));
 }
 
 void HcaClient::onDisconnected()
@@ -27,8 +29,9 @@ void HcaClient::onDisconnected()
     emit connectedChanged(false);
 }
 
-void HcaClient::parseServerMessage(QString &message)
+void HcaClient::parseServerMessage(const QString &message)
 {
+    qWarning() << "Received: " << message;
     QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8());
     if(!doc.isObject()){
         qWarning() << "Invalid json: " << message;
@@ -36,15 +39,24 @@ void HcaClient::parseServerMessage(QString &message)
     }
 
     QJsonObject docObj = doc.object();
-    int r = docObj["r"].toInt();
+    int r = docObj[REQUEST].toInt();
     switch(r){
     case PING:
     {
         QJsonObject response;
-        response["r"] = PONG;
+        response[REQUEST] = PONG;
         QJsonDocument doc;
         doc.setObject(response);
-        socket.sendTextMessage(doc.toJson());
+        socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+    }
+        break;
+    case LOGIN:
+    {
+        QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8());
+        QUuid uuid(docObj[UUID].toString());
+        settings.setValue(UUID, uuid);
+        settings.setValue(NAME, docObj[NAME].toString());
+        qWarning() << "new Uuid: " << uuid.toString();
     }
         break;
     default:
@@ -56,11 +68,11 @@ void HcaClient::sendLogin()
 {
     if(m_connected){
         QJsonObject response;
-        response["r"] = LOGIN;
-        response["e"] = "gino.pilotino@gmail.com";
+        response[REQUEST] = LOGIN;
+        response[UUID] = settings.value(UUID, "").toUuid().toString();
         QJsonDocument doc;
         doc.setObject(response);
-        socket.sendTextMessage(doc.toJson());
+        socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
     }
 }
 

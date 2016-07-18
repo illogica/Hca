@@ -16,6 +16,32 @@ void HcaServer::init()
     }
 }
 
+Client *HcaServer::findClient(QUuid uuid)
+{
+    for(Client *c: clients){
+        if(c->uuid() == uuid)
+            return c;
+    }
+    return nullptr; //tbtested
+}
+
+Client *HcaServer::findClient(QWebSocket *websocket)
+{
+    for(Client *c: clients){
+        if(c->socket() == websocket)
+            return c;
+    }
+    return nullptr; //tbtested
+}
+
+Client *HcaServer::createClient()
+{
+    Client *c = new Client();
+    clients.append(c);
+    c->setUuid(QUuid::createUuid());
+    return c;
+}
+
 void HcaServer::onNewConnection()
 {
     QWebSocket *socket = socketServer->nextPendingConnection();
@@ -46,17 +72,43 @@ void HcaServer::onTextMessage(QString msg)
     }
 
     QJsonObject docObj = doc.object();
-    int r = docObj["r"].toInt();
+    int r = docObj[REQUEST].toInt();
     switch(r){
     case PING:
     {
         QJsonObject response;
-        response["r"] = PONG;
+        response[REQUEST] = PONG;
         QJsonDocument doc;
         doc.setObject(response);
         socket->sendTextMessage(doc.toJson());
     }
         break;
+    case LOGIN:
+    {
+        //Extract data from the json request
+        QUuid uuid(docObj[UUID].toString());
+
+        Client *c = findClient(uuid);
+        if(!c){
+            c = createClient();
+        }
+        c->setSocket(socket);
+        if(!onlineClients.contains(c)){
+            onlineClients.append(c);
+        }
+        limbo.removeOne(socket);
+
+        QJsonObject response;
+        response[REQUEST] = LOGIN;
+        response[NAME] = c->name();
+        response[UUID] = c->uuid().toString();
+        QJsonDocument doc;
+        doc.setObject(response);
+        socket->sendTextMessage(doc.toJson());
+
+        qWarning() << "Online clients: " << onlineClients.size();
+    }
+
     case PONG:
         break;
     default:
@@ -69,7 +121,9 @@ void HcaServer::onTextMessage(QString msg)
 
 void HcaServer::onSocketDisconnected()
 {
-    qWarning() << "disconnected.";
+    qWarning() << "disconnected socket";
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
-    limbo.removeOne(socket);
+    limbo.removeOne(socket); //even if it's not there
+    onlineClients.removeOne(findClient(socket));
+    qWarning() << "Online clients: " << onlineClients.size();
 }

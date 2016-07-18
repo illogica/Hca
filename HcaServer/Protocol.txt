@@ -46,8 +46,9 @@ Server listens for incoming connections
 Client connects
     Client socket gets saved in a limbo list
     Socket in the limbo sends a request:
-        if request contains login but user is not found
+        if request contains login but user by UUID is not found
             generate a new user
+            return the UUID to the user
         else request contains login and user is found
             load the user
         take the socket from the limbo and put it into the user

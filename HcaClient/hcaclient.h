@@ -5,6 +5,7 @@
 #include <QWebSocket>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QSettings>
 
 class HcaClient : public QObject
 {
@@ -20,7 +21,7 @@ signals:
 public slots:
     void onConnected();
     void onDisconnected();
-    void parseServerMessage(QString &message);
+    void parseServerMessage(const QString &message);
 
     //
     void sendLogin();
@@ -33,6 +34,7 @@ public slots:
 private:
     QJsonDocument makePing();
 
+    QSettings settings;
     QWebSocket socket;
     bool m_connected;
 };
