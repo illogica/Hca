@@ -6,6 +6,7 @@ Client::Client(QObject *parent) : QObject(parent)
 {
     id = idCounter++;
     connect(this, &Client::queueTextMessage, this, &Client::sendTextMessage);
+    setName(QStringLiteral("unnamed"));
 }
 
 QUuid Client::uuid() const

@@ -10,7 +10,7 @@ class Client : public QObject
     Q_OBJECT
 public:
     explicit Client(QObject *parent = 0);
-
+    quint32 id;
     static quint32 idCounter;
 
     QUuid uuid() const;
@@ -31,7 +31,6 @@ public slots:
     //void setSocket(QWebSocket *sck){this->socket = sck;}
 
 private:
-    quint32 id;
     QUuid m_uuid;
     QString m_name;
     QWebSocket *m_socket;

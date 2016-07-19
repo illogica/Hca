@@ -10,12 +10,21 @@ class World : public QObject
 public:
     explicit World(QObject *parent = 0);
     quint32 id;
-    QString name;
-    QList<Room *> rooms;
+    static quint32 idCounter;
+
+    QString name() const;
+    void setName(const QString &name);
+
+    QList<Room *> rooms() const;
+    void setRooms(const QList<Room *> &rooms);
 
 signals:
 
 public slots:
+
+private:
+    QString m_name;
+    QList<Room *> m_rooms;
 };
 
 #endif // WORLD_H

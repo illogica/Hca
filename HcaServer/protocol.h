@@ -13,9 +13,12 @@ enum Request{
     PONG,
     LOGIN,
     JOIN_ROOM, //join or create is the same
+    NOTIFY_JOIN_ROOM,
+    NOTIFY_CHANGE_ROOM_NAME,
+    LEAVE_ROOM,
+    NOTIFY_LEAVE_ROOM,
     LIST_ROOMS,
     LIST_WORLDS,
-    JOIN_ROOM,
     JOIN_WORLD,
     SEND_ROOM,
     SEND_USER

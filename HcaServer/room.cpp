@@ -7,6 +7,19 @@ Room::Room(QObject *parent) : QObject(parent)
     id = idCounter++;
 }
 
+void Room::addClient(Client *client)
+{
+    m_clients.append(client);
+    notifyJoin(client->name());
+}
+
+void Room::removeClient(Client *client)
+{
+    if(m_clients.removeOne(client)){
+        notifyLeave(client->name());
+    }
+}
+
 QString Room::name() const
 {
     return m_name;
@@ -25,4 +38,42 @@ Client *Room::owner() const
 void Room::setOwner(Client *owner)
 {
     m_owner = owner;
+}
+
+void Room::notifyJoin(const QString &name)
+{
+    QJsonObject response;
+    response[REQUEST] = NOTIFY_JOIN_ROOM;
+    response[NAME] = name;
+    QJsonDocument doc;
+    doc.setObject(response);
+    for(Client *c : m_clients){
+        if(c->name() != name)
+            emit c->queueTextMessage(doc.toJson());
+    }
+}
+
+void Room::notifyLeave(const QString &name)
+{
+    QJsonObject response;
+    response[REQUEST] = NOTIFY_LEAVE_ROOM;
+    response[NAME] = name;
+    QJsonDocument doc;
+    doc.setObject(response);
+    for(Client *c : m_clients){
+        if(c->name() != name)
+            emit c->queueTextMessage(doc.toJson());
+    }
+}
+
+void Room::notifyChangeName(const QString &name)
+{
+    QJsonObject response;
+    response[REQUEST] = NOTIFY_CHANGE_ROOM_NAME;
+    response[NAME] = name;
+    QJsonDocument doc;
+    doc.setObject(response);
+    for(Client *c : m_clients){
+        emit c->queueTextMessage(doc.toJson());
+    }
 }

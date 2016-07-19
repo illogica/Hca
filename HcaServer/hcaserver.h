@@ -9,6 +9,7 @@
 #include <QUuid>
 #include "client.h"
 #include "room.h"
+#include "world.h"
 #include "protocol.h"
 
 class HcaServer : public QObject
@@ -44,7 +45,7 @@ private:
     QWebSocketServer *socketServer;
     QList<Client *> onlineClients;
     QList<QWebSocket *> limbo; //list of websockets without a user
-    QList<Room *> rooms;
+    QList<World *> worlds;
 };
 
 #endif // HCASERVER_H

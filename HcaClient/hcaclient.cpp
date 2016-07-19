@@ -2,7 +2,7 @@
 #include "QUuid"
 #include "../HcaServer/protocol.h"
 
-HcaClient::HcaClient(QObject *parent) : QObject(parent)
+HcaClient::HcaClient(QObject *parent, QQmlContext *context) : QObject(parent), ctx(context)
 {
     connect(&socket, &QWebSocket::connected, this, &HcaClient::onConnected);
     connect(&socket, &QWebSocket::disconnected, this, &HcaClient::onDisconnected);
@@ -19,7 +19,8 @@ void HcaClient::onConnected()
     qWarning() << "onConnected()";
     m_connected = true;
     emit connectedChanged(true);
-    socket.sendTextMessage(makePing().toJson(QJsonDocument::Compact));
+    //socket.sendTextMessage(makePing().toJson(QJsonDocument::Compact));
+    sendLogin();
 }
 
 void HcaClient::onDisconnected()
@@ -48,20 +49,53 @@ void HcaClient::parseServerMessage(const QString &message)
         QJsonDocument doc;
         doc.setObject(response);
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
-    }
-        break;
+    } break;
+
     case LOGIN:
     {
-        QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8());
         QUuid uuid(docObj[UUID].toString());
         settings.setValue(UUID, uuid);
         settings.setValue(NAME, docObj[NAME].toString());
         qWarning() << "new Uuid: " << uuid.toString();
-    }
-        break;
+    } break;
+
+    case JOIN_ROOM:
+    {
+        QString name = docObj[NAME].toString();
+        qWarning() << "Joined room: " << name;
+    } break;
+
     default:
         qWarning() << "unrecognized command";
     }
+}
+
+void HcaClient::joinRoom(const QString &name)
+{
+    QString roomName;
+    roomName = name.trimmed();
+    if(name.length() < 3 || name.length()>32) return;
+
+    QJsonObject request;
+    request[REQUEST] = JOIN_ROOM;
+    request[NAME] = roomName;
+    QJsonDocument doc;
+    doc.setObject(request);
+    socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+}
+
+void HcaClient::leaveRoom(const QString &name)
+{
+    QString roomName;
+    roomName = name.trimmed();
+    if(name.length() < 3 || name.length()>32) return;
+
+    QJsonObject request;
+    request[REQUEST] = LEAVE_ROOM;
+    request[NAME] = roomName;
+    QJsonDocument doc;
+    doc.setObject(request);
+    socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
 }
 
 void HcaClient::sendLogin()
@@ -72,6 +106,17 @@ void HcaClient::sendLogin()
         response[UUID] = settings.value(UUID, "").toUuid().toString();
         QJsonDocument doc;
         doc.setObject(response);
+        socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+    }
+}
+
+void HcaClient::sendGetRooms()
+{
+    if(m_connected){
+        QJsonObject request;
+        request[REQUEST] = LIST_ROOMS;
+        QJsonDocument doc;
+        doc.setObject(request);
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
     }
 }

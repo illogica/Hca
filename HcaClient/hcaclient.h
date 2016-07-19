@@ -6,13 +6,15 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QSettings>
+#include <QQmlContext>
+#include "roomdata.h"
 
 class HcaClient : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool connected READ connected WRITE setConnected NOTIFY connectedChanged)
 public:
-    explicit HcaClient(QObject *parent = 0);
+    explicit HcaClient(QObject *parent = 0, QQmlContext *context = 0);
     void establish();
 
 signals:
@@ -22,6 +24,8 @@ public slots:
     void onConnected();
     void onDisconnected();
     void parseServerMessage(const QString &message);
+    void joinRoom(const QString &name);
+    void leaveRoom(const QString &name);
 
     //
     void sendLogin();
@@ -37,6 +41,8 @@ private:
     QSettings settings;
     QWebSocket socket;
     bool m_connected;
+    QQmlContext *ctx;
+    QList<RoomData*> rooms;
 };
 
 #endif // HCACLIENT_H

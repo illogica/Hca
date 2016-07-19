@@ -58,4 +58,11 @@ Connected client wants to join/create a room
     Sends the server a JOIN_ROOM request
         if room doesn't exist, create it
         add client to the room
+        notify the rest of the room
+
+Client wants to leave a room
+    Sends the server a LEAVE_ROOM request
+        server removes user from room if it exists
+        if room is empty, delete the room
+
 

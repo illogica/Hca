@@ -11,9 +11,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("Illogicasoftware.com");
     QCoreApplication::setApplicationName("Hca Client");
 
-    HcaClient *client = new HcaClient();
-
     QQmlApplicationEngine engine;
+    HcaClient *client = new HcaClient(engine.rootContext());
     engine.rootContext()->setContextProperty("HcaClient", client);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
