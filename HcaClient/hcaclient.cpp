@@ -1,13 +1,16 @@
 #include "hcaclient.h"
 #include "QUuid"
 #include "../HcaServer/protocol.h"
+#include "dataobject.h"
 
-HcaClient::HcaClient(QObject *parent, QQmlContext *context) : QObject(parent), ctx(context)
+HcaClient::HcaClient(QObject *parent, QQmlContext *context) : QObject(parent)
 {
+    this->ctx = context;
     connect(&socket, &QWebSocket::connected, this, &HcaClient::onConnected);
     connect(&socket, &QWebSocket::disconnected, this, &HcaClient::onDisconnected);
     connect(&socket, &QWebSocket::textMessageReceived, this, &HcaClient::parseServerMessage);
-    //connect();
+
+    ctx->setContextProperty("wlModel", QVariant::fromValue(m_worldsModel));
 }
 
 void HcaClient::establish(){
@@ -87,20 +90,32 @@ void HcaClient::parseServerMessage(const QString &message)
             bool found = false;
             for(it = worlds.begin(); it!=worlds.end(); it++){
                 QJsonObject obj = (*it).toObject();
-                if(obj[NAME].toString() == w->name()){
+                if(obj[WORLD_NAME].toString() == w->name()){
                     found = true;
                     break;
                 }
             }
             if(!found) delete w;
         }
-        ctx->setContextProperty("worldsListModel", QVariant::fromValue(m_worlds));
+
+        //Share the data with the QML side
+        qDeleteAll(m_worldsModel.begin(), m_worldsModel.end());
+        for(WorldData *w : m_worlds){
+            m_worldsModel.append(new WorldData(w->name(), w->description(), w->size()));
+        }
+        ctx->setContextProperty("wlModel", QVariant::fromValue(m_worldsModel));
+
         qWarning() << "Updated worlds lists";
     } break;
 
     default:
         qWarning() << "unrecognized command";
     }
+}
+
+void HcaClient::joinWorld(const QString &name)
+{
+    //IMPLEMENT ME!!!!
 }
 
 void HcaClient::joinRoom(const QString &name)

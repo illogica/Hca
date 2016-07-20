@@ -26,6 +26,7 @@ public slots:
     void onConnected();
     void onDisconnected();
     void parseServerMessage(const QString &message);
+    void joinWorld(const QString &name);
     void joinRoom(const QString &name);
     void leaveRoom(const QString &name);
 
@@ -52,6 +53,7 @@ private:
 
     WorldData *currentWorld;
     QList<WorldData *> m_worlds;
+    QList<QObject *> m_worldsModel;
 };
 
 #endif // HCACLIENT_H

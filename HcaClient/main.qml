@@ -14,7 +14,10 @@ ApplicationWindow{
     menuBar: MenuBar {
         Menu {
             title: "File"
-            MenuItem { text: "Open..." }
+            MenuItem {
+                text: "Open world..."
+                onTriggered: dialogChooseWorld.visible = true
+            }
             MenuItem {
                 text: "Close"
                 onTriggered: Qt.quit()
@@ -72,18 +75,53 @@ ApplicationWindow{
             anchors.fill: parent
             anchors.centerIn: parent
 
-            ColumnLayout{
+            /*ColumnLayout{
                 anchors.centerIn: parent
                 anchors.fill: parent
                 spacing: 10
-                Button{
+                /*Button{
                     text: "Contacts"
                     onClicked: console.warn("contacts pushed")
                 }
                 Button{
                     text: "Rooms"
                     onClicked: stackView.push(roomsView)
-                }
+                }*/
+
+                ListView {
+                    id: listWorldsTemp
+
+                    anchors.fill: parent
+                    model: wlModel
+                           //myModel
+                           /*ListModel {
+                               ListElement {
+                                   name: "Bill Smith"
+                                   size: 5
+                               }
+                               ListElement {
+                                   name: "John Brown"
+                                   size: 6
+                               }
+                               ListElement {
+                                   name: "Sam Wise"
+                                   size: 7
+                               }
+                           }*/
+                    delegate:
+                        Rectangle {
+
+                        Component.onCompleted: console.warn("Name: " + modelData.name)
+
+                        color: Qt.rgba(0.5,0.1,0.1,0.5)
+
+                        width: 180; height: 40
+                        Column {
+                            Text { text: '<b>Name:</b> ' + name}
+                            Text { text: '<b>Size:</b> ' + model.modelData.size }
+                        }
+                    }
+               // }
             }
         }
 
@@ -96,17 +134,17 @@ ApplicationWindow{
        ListView{
            id: listViewRooms
            anchors.fill: parent
-           model: roomsListModel  //from c++
+           model: worldsListModel  //from c++
            delegate: Rectangle{
                height: 25
                width: parent.width
                Text{
                    anchors.left: parent.left
-                   text: roomName
+                   text: name
                }
                Text{
                    anchors.right: parent.right
-                   text: roomClients + " clients"
+                   text: size + " clients"
                }
            }
        }
@@ -175,6 +213,43 @@ ApplicationWindow{
                 Label {
                     text: "Choose the name wisely!"
                     Layout.alignment: Qt.AlignBaseline | Qt.AlignLeft
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: dialogChooseWorld
+        modality: Qt.WindowModal
+        title: "Chose your world!"
+
+        standardButtons: StandardButton.Cancel
+
+        onAccepted: {
+            console.warn("Accepted: ", textRoomLeave.text);
+            //HcaClient.leaveRoom(textRoomLeave.text);
+        }
+
+        ListView {
+            id: listWorlds
+            width: parent.width
+            model: wlModel
+            delegate:
+                Item {
+
+                Component.onCompleted: console.log("Name: " + name)
+
+                width: 180; height: 40
+                Column {
+                    Text { text: '<b>Name:</b> ' + name }
+                    Text { text: '<b>Size:</b> ' + size }
+                }
+
+                MouseArea{
+                    anchors.fill: parent
+                    onClicked: {
+                        dialogChooseWorld.visible = false;
+                    }
                 }
             }
         }

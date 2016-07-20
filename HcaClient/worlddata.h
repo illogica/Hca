@@ -10,20 +10,22 @@ class WorldData : public QObject
     Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged)
     Q_PROPERTY(int size READ size WRITE setSize NOTIFY sizeChanged)
 public:
-    explicit WorldData(QObject *parent = 0);
+    WorldData(QObject *parent = 0);
+    WorldData(const QString &name, const QString &description, int size, QObject *parent = 0);
+
+    QString name() const;
+    void setName(const QString &name);
+
+    QString description() const;
+    void setDescription(const QString &description);
+
+    int size() const;
+    void setSize(int size);
 
 signals:
-    void nameChanged(const QString &name);
-    void descriptionChanged(const QString &name);
-    void sizeChanged(int size);
-
-public slots:
-    void setName(const QString &name);
-    void setDescription(const QString &description);
-    void setSize(int size);
-    QString name();
-    QString description();
-    int size();
+    void nameChanged();
+    void descriptionChanged();
+    void sizeChanged();
 
 private:
     QString m_name;

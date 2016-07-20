@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("Hca Client");
 
     QQmlApplicationEngine engine;
-    HcaClient *client = new HcaClient(engine.rootContext());
+    HcaClient *client = new HcaClient(0, engine.rootContext());
     engine.rootContext()->setContextProperty("HcaClient", client);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
