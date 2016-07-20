@@ -5,24 +5,35 @@ RoomData::RoomData(QObject *parent) : QObject(parent)
 
 }
 
-void RoomData::setRoomName(const QString &name)
+void RoomData::setName(const QString &name)
 {
     m_name = name;
-    emit roomNameChanged(name);
+    emit nameChanged(name);
 }
 
-void RoomData::setRoomClients(int clients)
+void RoomData::setDescription(const QString &description)
 {
-    m_clients = clients;
-    emit roomClientsChanged(clients);
+    m_description = description;
+    emit descriptionChanged(m_description);
 }
 
-QString RoomData::roomName()
+void RoomData::setSize(int size)
+{
+    m_size = size;
+    emit sizeChanged(m_size);
+}
+
+QString RoomData::name()
 {
     return m_name;
 }
 
-int RoomData::roomClients()
+QString RoomData::description()
 {
-    return m_clients;
+    return m_description;
+}
+
+int RoomData::size()
+{
+    return m_size;
 }

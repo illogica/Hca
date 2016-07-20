@@ -6,6 +6,12 @@
 #define NAME "name"
 #define ERROR_BODY "error_body"
 #define ROOM_NAME "room_name"
+#define ROOM_SIZE "room_size"
+#define WORLDS "worlds"
+#define WORLD_NAME "world_name"
+#define WORLD_SIZE "world_size"
+#define DESCRIPTION "description"
+
 
 enum Request{
     ERROR =0,

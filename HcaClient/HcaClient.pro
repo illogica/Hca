@@ -5,7 +5,8 @@ CONFIG += c++11
 
 SOURCES += main.cpp \
     hcaclient.cpp \
-    roomdata.cpp
+    roomdata.cpp \
+    worlddata.cpp
 
 RESOURCES += qml.qrc
 
@@ -17,4 +18,5 @@ include(deployment.pri)
 
 HEADERS += \
     hcaclient.h \
-    roomdata.h
+    roomdata.h \
+    worlddata.h

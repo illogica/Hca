@@ -89,7 +89,7 @@ ApplicationWindow{
 
     }
 
-    Item{
+    /*Item{
        id: roomsView
        anchors.fill: parent
 
@@ -110,7 +110,7 @@ ApplicationWindow{
                }
            }
        }
-    }
+    }*/
 
     Dialog {
         id: dialogRoomName

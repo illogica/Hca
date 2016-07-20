@@ -5,9 +5,11 @@
 #include <QWebSocket>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QSettings>
 #include <QQmlContext>
 #include "roomdata.h"
+#include "worlddata.h"
 
 class HcaClient : public QObject
 {
@@ -27,8 +29,13 @@ public slots:
     void joinRoom(const QString &name);
     void leaveRoom(const QString &name);
 
-    //
+    //communication
     void sendLogin();
+    void sendGetWorldsList();
+    void sendGetRoomsList(const QString &worldName);
+
+    //utils
+    WorldData* findWorld(const QString &name);
 
     //Properties stuff
     bool connected();
@@ -42,7 +49,9 @@ private:
     QWebSocket socket;
     bool m_connected;
     QQmlContext *ctx;
-    QList<RoomData*> rooms;
+
+    WorldData *currentWorld;
+    QList<WorldData *> m_worlds;
 };
 
 #endif // HCACLIENT_H

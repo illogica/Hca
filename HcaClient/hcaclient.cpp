@@ -57,12 +57,45 @@ void HcaClient::parseServerMessage(const QString &message)
         settings.setValue(UUID, uuid);
         settings.setValue(NAME, docObj[NAME].toString());
         qWarning() << "new Uuid: " << uuid.toString();
+        sendGetWorldsList();
     } break;
 
     case JOIN_ROOM:
     {
         QString name = docObj[NAME].toString();
         qWarning() << "Joined room: " << name;
+    } break;
+
+    case LIST_WORLDS:
+    {
+        //QString name = docObj[NAME].toString();
+        QJsonArray worlds = docObj[WORLDS].toArray();
+
+        //update the worlds we already have
+        QJsonArray::iterator it;
+        for(it = worlds.begin(); it!=worlds.end(); it++){
+            QJsonObject obj = (*it).toObject();
+            WorldData *w = findWorld(obj[WORLD_NAME].toString());
+            if(!w){ w = new WorldData(this); m_worlds.append(w);}
+            w->setName(obj[WORLD_NAME].toString());
+            w->setDescription(obj[DESCRIPTION].toString());
+            w->setSize(obj[WORLD_SIZE].toInt());
+        }
+
+        //delete worlds that don't exist anymore
+        for(WorldData *w : m_worlds){
+            bool found = false;
+            for(it = worlds.begin(); it!=worlds.end(); it++){
+                QJsonObject obj = (*it).toObject();
+                if(obj[NAME].toString() == w->name()){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) delete w;
+        }
+        ctx->setContextProperty("worldsListModel", QVariant::fromValue(m_worlds));
+        qWarning() << "Updated worlds lists";
     } break;
 
     default:
@@ -78,7 +111,8 @@ void HcaClient::joinRoom(const QString &name)
 
     QJsonObject request;
     request[REQUEST] = JOIN_ROOM;
-    request[NAME] = roomName;
+    //request[WORLD_NAME] = roomName;
+    request[ROOM_NAME] = roomName;
     QJsonDocument doc;
     doc.setObject(request);
     socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
@@ -110,11 +144,32 @@ void HcaClient::sendLogin()
     }
 }
 
-void HcaClient::sendGetRooms()
+void HcaClient::sendGetRoomsList(const QString &worldName)
 {
     if(m_connected){
         QJsonObject request;
         request[REQUEST] = LIST_ROOMS;
+        request[NAME] = worldName;
+        QJsonDocument doc;
+        doc.setObject(request);
+        socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+    }
+}
+
+WorldData *HcaClient::findWorld(const QString &name)
+{
+    for(WorldData *w : m_worlds){
+        if(w->name()==name)
+            return w;
+    }
+    return nullptr;
+}
+
+void HcaClient::sendGetWorldsList()
+{
+    if(m_connected){
+        QJsonObject request;
+        request[REQUEST] = LIST_WORLDS;
         QJsonDocument doc;
         doc.setObject(request);
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));

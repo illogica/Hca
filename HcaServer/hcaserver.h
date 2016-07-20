@@ -6,6 +6,7 @@
 #include <QWebSocket>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QUuid>
 #include "client.h"
 #include "room.h"
@@ -25,8 +26,8 @@ public:
     Client *findClient(QWebSocket *websocket);
     Client *createClient();
 
-    Room *findRoom(const QString &name);
-    Room *createRoom();
+    World *findWorld(const QString &name);
+    World *createWorld();
 
     QJsonDocument makeErrorMessage(const QString &error);
 
@@ -45,7 +46,9 @@ private:
     QWebSocketServer *socketServer;
     QList<Client *> onlineClients;
     QList<QWebSocket *> limbo; //list of websockets without a user
-    QList<World *> worlds;
+
+    QList<World *> worlds; //fundamental type. At least the default world always exists
+    World *defaultWorld;
 };
 
 #endif // HCASERVER_H
