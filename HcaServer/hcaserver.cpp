@@ -5,6 +5,10 @@ HcaServer::HcaServer(QObject *parent) : QObject(parent)
 {
     defaultWorld = createWorld();
     defaultWorld->setName("Hca");
+    defaultWorld->setDescription("The great Hca World!");
+    Room *lounge = defaultWorld->createRoom();
+    lounge->setName("Lounge");
+    lounge->setDescription("The public Hca Lounge");
     worlds.append(defaultWorld);
     init();
 }
@@ -153,7 +157,7 @@ void HcaServer::onTextMessage(QString msg)
         qWarning() << "Client " << c->name() << " requested world list";
     } break;
 
-    /*case JOIN_ROOM:
+    case LIST_ROOMS:
     {
         Client *c = findClient(socket);
         if(!c){
@@ -161,19 +165,55 @@ void HcaServer::onTextMessage(QString msg)
             return;
         }
 
-        //NOT WORKING YET!!!!
+        QString world = docObj[WORLD_NAME].toString();
+        World *w = findWorld(world);
+        if(!w){
+            socket->sendTextMessage(makeErrorMessage("World not found").toJson(QJsonDocument::Compact));
+            return;
+        }
+
+        QJsonArray roomsList;
+        for(Room *r : w->rooms()){
+            QJsonObject roomObj;
+            roomObj[WORLD_NAME]=w->name();
+            roomObj[ROOM_NAME]=r->name();
+            roomObj[DESCRIPTION]=r->description();
+            roomObj[ROOM_SIZE]=r->size();
+            roomsList.append(roomObj);
+        }
+
+        QJsonObject response;
+        response[REQUEST] = LIST_ROOMS;
+        response[ROOMS] = roomsList;
+        QJsonDocument doc;
+        doc.setObject(response);
+        emit c->queueTextMessage(doc.toJson(QJsonDocument::Compact));
+        qWarning() << "Client " << c->name() << " requested rooms list";
+    } break;
+
+    case JOIN_ROOM:
+    {
+        Client *c = findClient(socket);
+        if(!c){
+            socket->sendTextMessage(makeErrorMessage("Client not found").toJson(QJsonDocument::Compact));
+            return;
+        }
+
+        QString world = docObj[WORLD_NAME].toString();
+        World *w = findWorld(world);
+        if(!w){
+            socket->sendTextMessage(makeErrorMessage("World not found").toJson(QJsonDocument::Compact));
+            return;
+        }
 
         //If room doesn't exist, create it
-        QString roomName = docObj[NAME].toString();
-        Room *r = findRoom(roomName);
+        QString roomName = docObj[ROOM_NAME].toString();
+        Room *r = w->findRoom(roomName);
         if(!r){
-            r = createRoom();
+            r = w->createRoom();
             r->setName(roomName);
             r->setOwner(c);
         }
-
-        //add room to rooms list
-        rooms.append(r);
 
         //add user to the room
         r->addClient(c);
@@ -186,9 +226,9 @@ void HcaServer::onTextMessage(QString msg)
         emit c->queueTextMessage(doc.toJson(QJsonDocument::Compact));
 
         qWarning() << "Client " << c->name() << " joined room " << r->name();
-    } break;*/
+    } break;
 
-    /*case LEAVE_ROOM:
+    case LEAVE_ROOM:
     {
         Client *c = findClient(socket);
         if(!c){
@@ -196,24 +236,29 @@ void HcaServer::onTextMessage(QString msg)
             return;
         }
 
-        QString roomName = docObj[NAME].toString();
-        Room *r = findRoom(roomName);
-        r->removeClient(c);
-
-        QJsonObject response;
-        response[REQUEST] = LEAVE_ROOM;
-        response[NAME] = r->name();
-        QJsonDocument doc;
-        doc.setObject(response);
-        emit c->queueTextMessage(doc.toJson(QJsonDocument::Compact));
-
-        if(r->isEmpty()){
-            rooms.removeOne(r);
-            r->deleteLater();
+        QString world = docObj[WORLD_NAME].toString();
+        World *w = findWorld(world);
+        if(!w){
+            socket->sendTextMessage(makeErrorMessage("World not found").toJson(QJsonDocument::Compact));
+            return;
         }
 
-        qWarning() << "Client " << c->name() << " left room " << r->name();
-    } break;*/
+        QString roomName = docObj[ROOM_NAME].toString();
+        Room *r = w->findRoom(roomName);
+        if(r->removeClient(c)){
+            QJsonObject response;
+            response[REQUEST] = LEAVE_ROOM;
+            response[NAME] = r->name();
+            QJsonDocument doc;
+            doc.setObject(response);
+            emit c->queueTextMessage(doc.toJson(QJsonDocument::Compact));
+
+            if(r->isEmpty()){
+                w->deleteRoom(r);
+            }
+            qWarning() << "Client " << c->name() << " left room " << r->name();
+        }
+    } break;
 
     case PONG:
         break;

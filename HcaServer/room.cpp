@@ -9,14 +9,19 @@ Room::Room(QObject *parent) : QObject(parent)
 
 void Room::addClient(Client *client)
 {
-    m_clients.append(client);
-    notifyJoin(client->name());
+    if(!m_clients.contains(client)){
+        m_clients.append(client);
+        notifyJoin(client->name());
+    }
 }
 
-void Room::removeClient(Client *client)
+bool Room::removeClient(Client *client)
 {
     if(m_clients.removeOne(client)){
         notifyLeave(client->name());
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -76,4 +81,14 @@ void Room::notifyChangeName(const QString &name)
     for(Client *c : m_clients){
         emit c->queueTextMessage(doc.toJson());
     }
+}
+
+QString Room::description() const
+{
+    return m_description;
+}
+
+void Room::setDescription(const QString &description)
+{
+    m_description = description;
 }

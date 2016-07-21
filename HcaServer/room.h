@@ -16,15 +16,19 @@ public:
     quint32 id;
     static quint32 idCounter;
     bool isEmpty(){return m_clients.isEmpty();}
+    int size(){return m_clients.size();}
 
     void addClient(Client* client);
-    void removeClient(Client* client);
+    bool removeClient(Client* client);
 
     QString name() const;
     void setName(const QString &name);
 
     Client *owner() const;
     void setOwner(Client *owner);
+
+    QString description() const;
+    void setDescription(const QString &description);
 
 signals:
 
@@ -36,6 +40,7 @@ public slots:
 
 private:
     QString m_name;
+    QString m_description;
     Client *m_owner;
     QList<Client *> m_masters;  //room operators
     QList<Client *> m_clients;  //room users (and operators, too)

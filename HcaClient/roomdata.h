@@ -11,19 +11,21 @@ class RoomData : public QObject
     Q_PROPERTY(int size READ size WRITE setSize NOTIFY sizeChanged)
 public:
     explicit RoomData(QObject *parent = 0);
+    RoomData(const QString &name, const QString &description, int size, QObject *parent = 0);
+
+    QString name();
+    void setName(const QString &name);
+
+    QString description();
+    void setDescription(const QString &description);
+
+    int size();
+    void setSize(int size);
 
 signals:
-    void nameChanged(const QString &name);
-    void descriptionChanged(const QString &name);
-    void sizeChanged(int clients);
-
-public slots:
-    void setName(const QString &name);
-    void setDescription(const QString &description);
-    void setSize(int size);
-    QString name();
-    QString description();
-    int size();
+    void nameChanged();
+    void descriptionChanged();
+    void sizeChanged();
 
 private:
     QString m_name;

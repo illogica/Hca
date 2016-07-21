@@ -9,6 +9,18 @@ WorldData::WorldData(const QString &name, const QString &description, int size, 
 {
 }
 
+void WorldData::resetRooms()
+{
+    qDeleteAll(m_rooms);
+    qDeleteAll(m_roomsModel);
+}
+
+void WorldData::addRoom(RoomData *r)
+{
+    m_rooms.append(r);
+    m_roomsModel.append(new RoomData(r->name(), r->description(), r->size()));
+}
+
 void WorldData::setName(const QString &name)
 {
     if(m_name != name){
@@ -31,6 +43,11 @@ void WorldData::setSize(int size)
         m_size = size;
         emit sizeChanged();
     }
+}
+
+QList<QObject *> WorldData::roomsModel() const
+{
+    return m_roomsModel;
 }
 
 QString WorldData::name() const

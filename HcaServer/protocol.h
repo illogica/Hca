@@ -5,6 +5,7 @@
 #define UUID "uuid"
 #define NAME "name"
 #define ERROR_BODY "error_body"
+#define ROOMS "rooms"
 #define ROOM_NAME "room_name"
 #define ROOM_SIZE "room_size"
 #define WORLDS "worlds"

@@ -26,9 +26,8 @@ public slots:
     void onConnected();
     void onDisconnected();
     void parseServerMessage(const QString &message);
-    void joinWorld(const QString &name);
-    void joinRoom(const QString &name);
-    void leaveRoom(const QString &name);
+    void joinRoom(const QString &roomName, const QString &worldName);
+    void leaveRoom(const QString &roomName, const QString &worldName);
 
     //communication
     void sendLogin();

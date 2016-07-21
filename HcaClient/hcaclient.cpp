@@ -1,7 +1,6 @@
 #include "hcaclient.h"
 #include "QUuid"
 #include "../HcaServer/protocol.h"
-#include "dataobject.h"
 
 HcaClient::HcaClient(QObject *parent, QQmlContext *context) : QObject(parent)
 {
@@ -71,7 +70,6 @@ void HcaClient::parseServerMessage(const QString &message)
 
     case LIST_WORLDS:
     {
-        //QString name = docObj[NAME].toString();
         QJsonArray worlds = docObj[WORLDS].toArray();
 
         //update the worlds we already have
@@ -108,40 +106,66 @@ void HcaClient::parseServerMessage(const QString &message)
         qWarning() << "Updated worlds lists";
     } break;
 
+    case LIST_ROOMS:
+    {
+        QString world = docObj[WORLD_NAME].toString();
+        WorldData *w = findWorld(world);
+        if(!w) return;
+
+        QJsonArray rooms = docObj[ROOMS].toArray();
+        if(rooms.isEmpty()) return;
+
+        //we have enough data, let's start:
+        w->resetRooms();
+
+        QJsonArray::iterator it;
+        for(it = rooms.begin(); it!=rooms.end(); it++){
+            QJsonObject obj = (*it).toObject();
+            RoomData *r = new RoomData(this);
+            r->setName(obj[ROOM_NAME].toString());
+            r->setDescription(obj[DESCRIPTION].toString());
+            r->setSize(obj[ROOM_SIZE].toInt());
+            w->addRoom(r);
+        }
+
+        //Share the data with the QML side
+        ctx->setContextProperty("roomsModel", QVariant::fromValue(w->roomsModel()));
+
+        qWarning() << "Updated rooms list for " << w->name();
+    } break;
+
     default:
         qWarning() << "unrecognized command";
     }
 }
 
-void HcaClient::joinWorld(const QString &name)
+void HcaClient::joinRoom(const QString &roomName, const QString &worldName)
 {
-    //IMPLEMENT ME!!!!
-}
-
-void HcaClient::joinRoom(const QString &name)
-{
-    QString roomName;
-    roomName = name.trimmed();
-    if(name.length() < 3 || name.length()>32) return;
+    QString rName = roomName.trimmed();
+    if(rName.length() < 3 || rName.length()>32) return;
+    QString wName = worldName.trimmed();
+    if(wName.length() < 3 || wName.length()>32) return;
 
     QJsonObject request;
     request[REQUEST] = JOIN_ROOM;
-    //request[WORLD_NAME] = roomName;
-    request[ROOM_NAME] = roomName;
+    request[WORLD_NAME] = wName;
+    request[ROOM_NAME] = rName;
     QJsonDocument doc;
     doc.setObject(request);
     socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
 }
 
-void HcaClient::leaveRoom(const QString &name)
+void HcaClient::leaveRoom(const QString &roomName, const QString &worldName)
 {
-    QString roomName;
-    roomName = name.trimmed();
-    if(name.length() < 3 || name.length()>32) return;
+    QString rName = roomName.trimmed();
+    if(rName.length() < 3 || rName.length()>32) return;
+    QString wName = worldName.trimmed();
+    if(wName.length() < 3 || wName.length()>32) return;
 
     QJsonObject request;
     request[REQUEST] = LEAVE_ROOM;
-    request[NAME] = roomName;
+    request[WORLD_NAME] = wName;
+    request[ROOM_NAME] = rName;
     QJsonDocument doc;
     doc.setObject(request);
     socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
@@ -161,10 +185,13 @@ void HcaClient::sendLogin()
 
 void HcaClient::sendGetRoomsList(const QString &worldName)
 {
+    QString name = worldName.trimmed();
+    if(name.length() < 3 || name.length()>32) return;
+
     if(m_connected){
         QJsonObject request;
         request[REQUEST] = LIST_ROOMS;
-        request[NAME] = worldName;
+        request[WORLD_NAME] = name;
         QJsonDocument doc;
         doc.setObject(request);
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));

@@ -16,6 +16,7 @@ public:
 
     Room *findRoom(const QString &name);
     Room *createRoom();
+    void deleteRoom(Room *r);
 
     QString name() const;
     void setName(const QString &name);

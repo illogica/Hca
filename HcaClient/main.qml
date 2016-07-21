@@ -11,6 +11,8 @@ ApplicationWindow{
     height: 480
     title: qsTr("Hello World")
 
+    property string currentWorld: ""
+
     menuBar: MenuBar {
         Menu {
             title: "File"
@@ -27,7 +29,7 @@ ApplicationWindow{
             title: "Room"
             MenuItem {
                 text: "Join/Create..."
-                onTriggered: dialogRoomName.visible = true
+                onTriggered: dialogRoomJoin.visible = true
             }
             MenuItem {
                 text: "Leave..."
@@ -93,21 +95,7 @@ ApplicationWindow{
 
                     anchors.fill: parent
                     model: wlModel
-                           //myModel
-                           /*ListModel {
-                               ListElement {
-                                   name: "Bill Smith"
-                                   size: 5
-                               }
-                               ListElement {
-                                   name: "John Brown"
-                                   size: 6
-                               }
-                               ListElement {
-                                   name: "Sam Wise"
-                                   size: 7
-                               }
-                           }*/
+
                     delegate:
                         Rectangle {
 
@@ -151,7 +139,7 @@ ApplicationWindow{
     }*/
 
     Dialog {
-        id: dialogRoomName
+        id: dialogRoomJoin
         modality: Qt.WindowModal
         title: "Insert room name!"
 
@@ -159,7 +147,7 @@ ApplicationWindow{
 
         onAccepted: {
             console.warn("Accepted: ", textRoomName.text);
-            HcaClient.joinRoom(textRoomName.text);
+            HcaClient.joinRoom(textRoomName.text, currentWorld);
         }
 
 
@@ -179,6 +167,29 @@ ApplicationWindow{
                 Label {
                     text: "Choose the name wisely!"
                     Layout.alignment: Qt.AlignBaseline | Qt.AlignLeft
+                }
+            }
+
+            ListView {
+                id: listRooms
+                width: parent.width
+                model: roomsModel
+                delegate:
+                    Item {
+
+                    width: 180; height: 40
+                    Column {
+                        Text { text: '<b>Name:</b> ' + name }
+                        Text { text: '<b>Size:</b> ' + size }
+                    }
+
+                    MouseArea{
+                        anchors.fill: parent
+                        onClicked: {
+                            dialogChooseWorld.visible = false;
+                            HcaClient.joinRoom(name, currentWorld)
+                        }
+                    }
                 }
             }
         }
@@ -223,13 +234,6 @@ ApplicationWindow{
         modality: Qt.WindowModal
         title: "Chose your world!"
 
-        standardButtons: StandardButton.Cancel
-
-        onAccepted: {
-            console.warn("Accepted: ", textRoomLeave.text);
-            //HcaClient.leaveRoom(textRoomLeave.text);
-        }
-
         ListView {
             id: listWorlds
             width: parent.width
@@ -249,6 +253,8 @@ ApplicationWindow{
                     anchors.fill: parent
                     onClicked: {
                         dialogChooseWorld.visible = false;
+                        currentWorld = name
+                        HcaClient.sendGetRoomsList(name)
                     }
                 }
             }

@@ -23,6 +23,12 @@ Room *World::createRoom()
     return r;
 }
 
+void World::deleteRoom(Room *r)
+{
+    m_rooms.removeOne(r);
+    r->deleteLater();
+}
+
 QString World::name() const
 {
     return m_name;
