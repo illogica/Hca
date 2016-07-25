@@ -1,4 +1,4 @@
-QT += core websockets
+QT += core websockets sql
 QT -= gui
 
 CONFIG += c++11
@@ -15,7 +15,9 @@ SOURCES += main.cpp \
     message.cpp \
     conversation.cpp \
     room.cpp \
-    world.cpp
+    world.cpp \
+    hcathreadpool.cpp \
+    hcathread.cpp
 
 HEADERS += \
     hcaserver.h \
@@ -24,7 +26,10 @@ HEADERS += \
     message.h \
     conversation.h \
     room.h \
-    world.h
+    world.h \
+    hcathreadpool.h \
+    hcathread.h
 
 DISTFILES += \
-    Protocol.txt
+    Protocol.txt \
+    sql/init.sql

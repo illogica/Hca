@@ -15,6 +15,12 @@ HcaServer::HcaServer(QObject *parent) : QObject(parent)
 
 void HcaServer::init()
 {
+    m_maxThreads = 4;
+    for(int i=0; i<m_maxThreads; i++){
+        qWarning() << "Creating thread " << i;
+        m_threadPool.append(new HcaThread(QString(i)));
+    }
+
     socketServer = new QWebSocketServer(QStringLiteral("Hca Server"), QWebSocketServer::NonSecureMode, this);
     if(socketServer->listen(QHostAddress::Any, PORT)){
         connect(socketServer, &QWebSocketServer::newConnection, this, &HcaServer::onNewConnection);

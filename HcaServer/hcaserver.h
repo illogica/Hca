@@ -12,6 +12,7 @@
 #include "room.h"
 #include "world.h"
 #include "protocol.h"
+#include "hcathread.h"
 
 class HcaServer : public QObject
 {
@@ -41,6 +42,8 @@ public slots:
     void onSocketDisconnected();
 
 private:
+    int m_maxThreads;
+    QList<HcaThread *> m_threadPool;
     QList<Client *> clients; //to be put to REST
 
     QWebSocketServer *socketServer;
