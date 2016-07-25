@@ -1,5 +1,6 @@
 #include "hcaserver.h"
 #include <QElapsedTimer>
+#include "pingrunnable.h"
 
 HcaServer::HcaServer(QObject *parent) : QObject(parent)
 {
@@ -15,11 +16,20 @@ HcaServer::HcaServer(QObject *parent) : QObject(parent)
 
 void HcaServer::init()
 {
-    m_maxThreads = 4;
+    qWarning() << "Main thread: " << QThread::currentThreadId();
+    /*m_maxThreads = 4;
     for(int i=0; i<m_maxThreads; i++){
         qWarning() << "Creating thread " << i;
-        m_threadPool.append(new HcaThread(QString(i)));
+        HcaThread *t = new HcaThread(i, this);
+        m_threadPool.append(t);
+        connect(t, &HcaThread::initialized, this, &HcaServer::onThreadInitialized);
+        connect(t, &HcaThread::finished, this, &HcaServer::onThreadFinished);
+        connect(this, &HcaServer::testThread, t, &HcaThread::testText);
+        t->start();
     }
+
+    emit testThread();*/
+
 
     socketServer = new QWebSocketServer(QStringLiteral("Hca Server"), QWebSocketServer::NonSecureMode, this);
     if(socketServer->listen(QHostAddress::Any, PORT)){
@@ -104,11 +114,17 @@ void HcaServer::onTextMessage(QString msg)
     switch(r){
     case PING:
     {
-        QJsonObject response;
+
+        PingRunnable *pr = new PingRunnable();
+        pr->socket = socket;
+        connect(pr, &PingRunnable::pingResult, this, &HcaServer::onPingResult);
+        QThreadPool::globalInstance()->start(pr);
+        /*QJsonObject response;
         response[REQUEST] = PONG;
         QJsonDocument doc;
         doc.setObject(response);
-        socket->sendTextMessage(doc.toJson(QJsonDocument::Compact));
+        socket->sendTextMessage(doc.toJson(QJsonDocument::Compact));*/
+
     } break;
 
     case LOGIN:
@@ -282,6 +298,21 @@ void HcaServer::onSocketDisconnected()
     limbo.removeOne(socket); //even if it's not there
     onlineClients.removeOne(findClient(socket));
     qWarning() << "Online clients: " << onlineClients.size();
+}
+
+void HcaServer::onPingResult(QByteArray result, QWebSocket* sck)
+{
+    sck->sendTextMessage(result);
+}
+
+void HcaServer::onThreadInitialized(int id)
+{
+    qWarning() << "Initialized thread " << id;
+}
+
+void HcaServer::onThreadFinished()
+{
+    qWarning() << "One thread is dead";
 }
 
 QJsonDocument HcaServer::makeErrorMessage(const QString &error)

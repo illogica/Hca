@@ -28,7 +28,8 @@ HEADERS += \
     room.h \
     world.h \
     hcathreadpool.h \
-    hcathread.h
+    hcathread.h \
+    pingrunnable.h
 
 DISTFILES += \
     Protocol.txt \

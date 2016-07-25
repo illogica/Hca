@@ -34,12 +34,19 @@ public:
 
 signals:
     void sendTextMessage(const QString &message);
+    void initThreads();
+    void testThread();
 
 public slots:
     void onNewConnection();
     void onConnectionClosed();
     void onTextMessage(QString msg);
     void onSocketDisconnected();
+
+    void onPingResult(QByteArray, QWebSocket*);
+
+    void onThreadInitialized(int id);
+    void onThreadFinished();
 
 private:
     int m_maxThreads;
