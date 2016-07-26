@@ -44,9 +44,9 @@ public slots:
     void onSocketDisconnected();
 
     void onPingResult(QByteArray, QWebSocket*);
+    void onLoginResult(QByteArray, QWebSocket*);
 
-    void onThreadInitialized(int id);
-    void onThreadFinished();
+    void onDbError(QString error);
 
 private:
     int m_maxThreads;

@@ -53,6 +53,11 @@ void HcaClient::parseServerMessage(const QString &message)
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
     } break;
 
+    case PONG:
+    {
+        qWarning() << "PONG";
+    } break;
+
     case LOGIN:
     {
         QUuid uuid(docObj[UUID].toString());
@@ -177,6 +182,17 @@ void HcaClient::sendLogin()
         QJsonObject response;
         response[REQUEST] = LOGIN;
         response[UUID] = settings.value(UUID, "").toUuid().toString();
+        QJsonDocument doc;
+        doc.setObject(response);
+        socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+    }
+}
+
+void HcaClient::sendPing()
+{
+    if(m_connected){
+        QJsonObject response;
+        response[REQUEST] = PING;
         QJsonDocument doc;
         doc.setObject(response);
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));

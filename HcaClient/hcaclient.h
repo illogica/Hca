@@ -31,6 +31,7 @@ public slots:
 
     //communication
     void sendLogin();
+    void sendPing();
     void sendGetWorldsList();
     void sendGetRoomsList(const QString &worldName);
 

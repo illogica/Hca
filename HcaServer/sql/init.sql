@@ -1,14 +1,20 @@
-﻿DROP TABLE IF EXISTS worldrooms;
+﻿-- execute this query as user "hca"
+
+DROP TABLE IF EXISTS worldrooms;
 DROP TABLE IF EXISTS roomclients;
 DROP TABLE IF EXISTS worlds;
 DROP TABLE IF EXISTS rooms;
 DROP TABLE IF EXISTS clients;
 
 CREATE TABLE clients(
-uuid VARCHAR(50) primary key,
+uuid VARCHAR(40) primary key,
 name VARCHAR(255),
-description text
+description text,
+privilege SMALLINT,
+status SMALLINT
 );
+INSERT INTO clients(uuid, name, description, privilege, status)
+ VALUES('test-key', 'unnamed', 'description text', 0, 0);
 
 CREATE TABLE worlds(
 id SERIAL PRIMARY KEY,
@@ -20,7 +26,7 @@ CREATE TABLE rooms(
 id SERIAL PRIMARY KEY,
 name VARCHAR(255),
 description text,
-owner varchar(50) REFERENCES clients(uuid)
+owner varchar(40) REFERENCES clients(uuid)
 );
 
 CREATE TABLE worldrooms(
@@ -30,5 +36,5 @@ room INTEGER REFERENCES rooms(id)
 
 CREATE TABLE roomclients(
 room INTEGER REFERENCES rooms(id),
-clientuuid VARCHAR(50) REFERENCES clients(uuid)
+clientuuid VARCHAR(40) REFERENCES clients(uuid)
 );

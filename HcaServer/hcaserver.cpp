@@ -1,6 +1,8 @@
 #include "hcaserver.h"
 #include <QElapsedTimer>
 #include "pingrunnable.h"
+#include "loginrunnable.h"
+#include "hcarunnable.h"
 
 HcaServer::HcaServer(QObject *parent) : QObject(parent)
 {
@@ -17,19 +19,13 @@ HcaServer::HcaServer(QObject *parent) : QObject(parent)
 void HcaServer::init()
 {
     qWarning() << "Main thread: " << QThread::currentThreadId();
-    /*m_maxThreads = 4;
-    for(int i=0; i<m_maxThreads; i++){
-        qWarning() << "Creating thread " << i;
-        HcaThread *t = new HcaThread(i, this);
-        m_threadPool.append(t);
-        connect(t, &HcaThread::initialized, this, &HcaServer::onThreadInitialized);
-        connect(t, &HcaThread::finished, this, &HcaServer::onThreadFinished);
-        connect(this, &HcaServer::testThread, t, &HcaThread::testText);
-        t->start();
+    QThreadPool::globalInstance()->setMaxThreadCount(16);
+    qWarning() << "Maximum threads: " << QThreadPool::globalInstance()->maxThreadCount();
+
+    if (!QSqlDatabase::drivers().contains("QPSQL")){
+        qWarning() << "Unable to load database, PSQL driver missing";
+        return;
     }
-
-    emit testThread();*/
-
 
     socketServer = new QWebSocketServer(QStringLiteral("Hca Server"), QWebSocketServer::NonSecureMode, this);
     if(socketServer->listen(QHostAddress::Any, PORT)){
@@ -119,20 +115,33 @@ void HcaServer::onTextMessage(QString msg)
         pr->socket = socket;
         connect(pr, &PingRunnable::pingResult, this, &HcaServer::onPingResult);
         QThreadPool::globalInstance()->start(pr);
-        /*QJsonObject response;
-        response[REQUEST] = PONG;
-        QJsonDocument doc;
-        doc.setObject(response);
-        socket->sendTextMessage(doc.toJson(QJsonDocument::Compact));*/
-
     } break;
 
     case LOGIN:
     {
         //Extract data from the json request
-        QUuid uuid(docObj[UUID].toString());
+        //QUuid uuid(docObj[UUID].toString());
 
-        Client *c = findClient(uuid);
+        /*LoginRunnable *lr  = new LoginRunnable();
+        lr->socket = socket;
+        lr->uuid = docObj[UUID].toString();
+        connect(lr, &LoginRunnable::loginResult, this, &HcaServer::onLoginResult);
+        connect(lr, &LoginRunnable::dbError, this, &HcaServer::onDbError);
+        QThreadPool::globalInstance()->start(lr);
+        qWarning() << "Started login runnable...";*/
+        HcaRunnable *lr  = new HcaRunnable();
+                //lr->socket = socket;
+                //lr->uuid = docObj[UUID].toString();
+                connect(lr, &HcaRunnable::loginResult, this, &HcaServer::onLoginResult);
+                connect(lr, &HcaRunnable::dbError, this, &HcaServer::onDbError);
+                connect(this, &HcaServer::testThread, lr, &HcaRunnable::login, Qt::QueuedConnection);
+                QThreadPool::globalInstance()->start(lr);
+                qWarning() << "Started login runnable...";
+
+                emit testThread();
+
+
+        /*Client *c = findClient(uuid);
         if(!c){
             c = createClient();
         }
@@ -150,7 +159,7 @@ void HcaServer::onTextMessage(QString msg)
         doc.setObject(response);
         emit c->queueTextMessage(doc.toJson(QJsonDocument::Compact));
 
-        qWarning() << "Online clients: " << onlineClients.size();
+        qWarning() << "Online clients: " << onlineClients.size();*/
     } break;
 
     case LIST_WORLDS:
@@ -305,14 +314,15 @@ void HcaServer::onPingResult(QByteArray result, QWebSocket* sck)
     sck->sendTextMessage(result);
 }
 
-void HcaServer::onThreadInitialized(int id)
+void HcaServer::onLoginResult(QByteArray result, QWebSocket* sck)
 {
-    qWarning() << "Initialized thread " << id;
+    //limbo.removeOne(sck);
+    sck->sendTextMessage(result);
 }
 
-void HcaServer::onThreadFinished()
+void HcaServer::onDbError(QString error)
 {
-    qWarning() << "One thread is dead";
+    qWarning() << "Error connecting with database: " << error;
 }
 
 QJsonDocument HcaServer::makeErrorMessage(const QString &error)

@@ -13,6 +13,18 @@
 #define WORLD_SIZE "world_size"
 #define DESCRIPTION "description"
 
+enum Privilege{
+    GUEST,
+    USER,
+    MASTER,
+    ADMIN
+};
+
+enum Status{
+    OFFLINE,
+    ONLINE,
+    INVISIBLE,
+};
 
 enum Request{
     ERROR =0,

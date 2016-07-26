@@ -21,6 +21,10 @@ ApplicationWindow{
                 onTriggered: dialogChooseWorld.visible = true
             }
             MenuItem {
+                text: "Ping"
+                onTriggered: HcaClient.sendPing()
+            }
+            MenuItem {
                 text: "Close"
                 onTriggered: Qt.quit()
             }
