@@ -24,19 +24,10 @@ public:
 
     void init();
 
-    Client *findClient(QUuid uuid);
-    Client *findClient(QWebSocket *websocket);
-    Client *createClient();
-
-    World *findWorld(const QString &name);
-    World *createWorld();
-
     QJsonDocument makeErrorMessage(const QString &error);
 
 signals:
     void sendTextMessage(const QString &message);
-    void initThreads();
-    void doLoginWork(HcaThread* t);
 
 public slots:
     void onNewConnection();
@@ -45,21 +36,18 @@ public slots:
     void onSocketDisconnected();
 
     void onPingResult(QByteArray, QWebSocket*);
-    void onLoginResult(QByteArray, QWebSocket*);
+    void onLoginResult(QByteArray, QWebSocket*, QString);
+    void onDisconnectResult();
 
     void onDbError(QString error);
 
 private:
-    int m_maxThreads;
     HcaThreadPool *m_tp;
-    QList<Client *> clients; //to be put to REST
+    QList<QWebSocket *> onlineSockets; //list of active sockets
 
+    //store the relation between client uuids and sockets
+    QHash<QWebSocket*, QString> clients;
     QWebSocketServer *socketServer;
-    QList<Client *> onlineClients;
-    QList<QWebSocket *> limbo; //list of websockets without a user
-
-    QList<World *> worlds; //fundamental type. At least the default world always exists
-    World *defaultWorld;
 };
 
 #endif // HCASERVER_H

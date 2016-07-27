@@ -21,7 +21,7 @@ public:
     QWebSocket* socket;
 
 signals:
-    void loginResult(QByteArray, QWebSocket*);
+    void loginResult(QByteArray, QWebSocket*, QString);
     void dbError(QString error);
 
 public slots:

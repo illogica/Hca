@@ -7,7 +7,7 @@
 bool LoginWorker::findUser()
 {
     QSqlQuery query(m_db);
-    query.prepare("SELECT * FROM clients WHERE uuid = ':uuid'");
+    query.prepare("SELECT * FROM clients WHERE uuid = :uuid");
     query.bindValue(":uuid", uuid);
     if(!query.exec()){
         qWarning() << "Error in " << query.lastQuery();
@@ -59,7 +59,9 @@ void LoginWorker::createUser()
 
 void LoginWorker::doWork(HcaThread *t)
 {
-    emit(t->setThreadStatus(m_id, false));
+    QElapsedTimer totalTime;
+    totalTime.start();
+    emit(t->setThreadStatus(m_id, false)); //this must always be the first
 
     m_id = t->id();
     m_db = t->db();
@@ -75,7 +77,8 @@ void LoginWorker::doWork(HcaThread *t)
     QJsonDocument doc;
     doc.setObject(response);
     qWarning() << "Emitting login from " << QThread::currentThreadId();
-    emit loginResult(doc.toJson(QJsonDocument::Compact), socket);
-    emit(t->setThreadStatus(m_id, true));
+    emit loginResult(doc.toJson(QJsonDocument::Compact), socket, uuid);
+    emit(t->setThreadStatus(m_id, true)); //this must always be the last
+    qWarning() << "loginRequest evaded in " << totalTime.elapsed() << "ms";
 }
 

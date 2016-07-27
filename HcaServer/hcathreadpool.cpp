@@ -4,7 +4,7 @@ HcaThreadPool::HcaThreadPool(QObject *parent) : QObject(parent)
 {
     qRegisterMetaType<HcaWorker*>();
     qRegisterMetaType<HcaThread*>();
-    for(int i=0; i<maxThreads; i++){
+    for(int i=0; i<m_StartThreads; i++){
         qWarning() << "ThreadPool creating thread " << i;
         launchNewThread();
     }

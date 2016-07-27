@@ -2,16 +2,10 @@
 #include <QElapsedTimer>
 #include "pingrunnable.h"
 #include "loginworker.h"
+#include "disconnectworker.h"
 
 HcaServer::HcaServer(QObject *parent) : QObject(parent)
 {
-    defaultWorld = createWorld();
-    defaultWorld->setName("Hca");
-    defaultWorld->setDescription("The great Hca World!");
-    Room *lounge = defaultWorld->createRoom();
-    lounge->setName("Lounge");
-    lounge->setDescription("The public Hca Lounge");
-    worlds.append(defaultWorld);
     init();
 }
 
@@ -32,54 +26,13 @@ void HcaServer::init()
     }
 }
 
-Client *HcaServer::findClient(QUuid uuid)
-{
-    for(Client *c: clients){
-        if(c->uuid() == uuid)
-            return c;
-    }
-    return nullptr;
-}
-
-Client *HcaServer::findClient(QWebSocket *websocket)
-{
-    for(Client *c: clients){
-        if(c->socket() == websocket)
-            return c;
-    }
-    return nullptr;
-}
-
-Client *HcaServer::createClient()
-{
-    Client *c = new Client(this);
-    clients.append(c);
-    c->setUuid(QUuid::createUuid());
-    return c;
-}
-
-
-World *HcaServer::findWorld(const QString &name)
-{
-    for(World *w : worlds){
-        if(w->name() == name)
-            return w;
-    }
-    return nullptr;
-}
-
-World *HcaServer::createWorld()
-{
-    return new World(this);
-}
-
 void HcaServer::onNewConnection()
 {
     QWebSocket *socket = socketServer->nextPendingConnection();
     connect(socket, &QWebSocket::textMessageReceived, this, &HcaServer::onTextMessage);
     connect(socket, &QWebSocket::disconnected, this, &HcaServer::onSocketDisconnected);
-    limbo << socket;
-    qWarning() << "Added socket to the limbo" << socket->peerName() << ":" << socket->peerPort();
+    onlineSockets << socket;
+    qWarning() << "Added socket " << socket->peerName() << ":" << socket->peerPort();
 }
 
 void HcaServer::onConnectionClosed()
@@ -116,52 +69,15 @@ void HcaServer::onTextMessage(QString msg)
 
     case LOGIN:
     {
-        //Extract data from the json request
-        //QUuid uuid(docObj[UUID].toString());
-
-        /*LoginRunnable *lr  = new LoginRunnable();
-        lr->socket = socket;
-        lr->uuid = docObj[UUID].toString();
-        connect(lr, &LoginRunnable::loginResult, this, &HcaServer::onLoginResult);
-        connect(lr, &LoginRunnable::dbError, this, &HcaServer::onDbError);
-        QThreadPool::globalInstance()->start(lr);
-        qWarning() << "Started login runnable...";*/
-
         QPointer<LoginWorker> w = new LoginWorker();
         w->uuid = docObj[UUID].toString();
         w->socket = socket;
-        //w->moveToThread(t);
-        //connect(this, &HcaServer::doLoginWork, w, &LoginWorker::doWork);
         connect(w, &LoginWorker::loginResult, this, &HcaServer::onLoginResult);
         connect(w, &LoginWorker::loginResult, w, &LoginWorker::deleteLater);
         m_tp->push(w);
-
-        //emit doLoginWork(t);
-        //qRegisterMetaType<HcaThread*>();
-        //QMetaObject::invokeMethod(w, "doWork", Qt::QueuedConnection, Q_ARG(HcaThread*, t));
-
-        /*Client *c = findClient(uuid);
-        if(!c){
-            c = createClient();
-        }
-        c->setSocket(socket);
-        if(!onlineClients.contains(c)){
-            onlineClients.append(c);
-        }
-        limbo.removeOne(socket);
-
-        QJsonObject response;
-        response[REQUEST] = LOGIN;
-        response[NAME] = c->name();
-        response[UUID] = c->uuid().toString();
-        QJsonDocument doc;
-        doc.setObject(response);
-        emit c->queueTextMessage(doc.toJson(QJsonDocument::Compact));
-
-        qWarning() << "Online clients: " << onlineClients.size();*/
     } break;
 
-    case LIST_WORLDS:
+    /*case LIST_WORLDS:
     {
         Client *c = findClient(socket);
         if(!c){
@@ -288,7 +204,7 @@ void HcaServer::onTextMessage(QString msg)
             }
             qWarning() << "Client " << c->name() << " left room " << r->name();
         }
-    } break;
+    } break;*/
 
     case PONG:
         break;
@@ -303,20 +219,37 @@ void HcaServer::onSocketDisconnected()
 {
     qWarning() << "disconnected socket";
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
-    limbo.removeOne(socket); //even if it's not there
-    onlineClients.removeOne(findClient(socket));
-    qWarning() << "Online clients: " << onlineClients.size();
+    onlineSockets.removeOne(socket); //even if it's not there
+
+    //if there's a client with that socket, set it as "offline"
+    if(clients.contains(socket)){
+        QPointer<DisconnectWorker> w = new DisconnectWorker();
+        w->uuid = clients.value(socket);
+        connect(w, &DisconnectWorker::disconnectResult, this, &HcaServer::onDisconnectResult);
+        connect(w, &DisconnectWorker::disconnectResult, w, &DisconnectWorker::deleteLater);
+        m_tp->push(w);
+        clients.remove(socket);
+    }
+
+    qWarning() << "Online clients: " << onlineSockets.size();
 }
 
 void HcaServer::onPingResult(QByteArray result, QWebSocket* sck)
 {
-    sck->sendTextMessage(result);
+    if(onlineSockets.contains(sck)) sck->sendTextMessage(result);
 }
 
-void HcaServer::onLoginResult(QByteArray result, QWebSocket* sck)
+void HcaServer::onLoginResult(QByteArray result, QWebSocket* sck, QString uuid)
 {
-    //limbo.removeOne(sck);
-    sck->sendTextMessage(result);
+    if(onlineSockets.contains(sck)){
+        sck->sendTextMessage(result);
+        clients.insert(sck, uuid);
+    }
+}
+
+void HcaServer::onDisconnectResult()
+{
+    qWarning() << "onDisconnectResult()";
 }
 
 void HcaServer::onDbError(QString error)
