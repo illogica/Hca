@@ -13,6 +13,7 @@
 #include "world.h"
 #include "protocol.h"
 #include "hcathread.h"
+#include "hcathreadpool.h"
 
 class HcaServer : public QObject
 {
@@ -35,7 +36,7 @@ public:
 signals:
     void sendTextMessage(const QString &message);
     void initThreads();
-    void testThread();
+    void doLoginWork(HcaThread* t);
 
 public slots:
     void onNewConnection();
@@ -50,7 +51,7 @@ public slots:
 
 private:
     int m_maxThreads;
-    QList<HcaThread *> m_threadPool;
+    HcaThreadPool *m_tp;
     QList<Client *> clients; //to be put to REST
 
     QWebSocketServer *socketServer;

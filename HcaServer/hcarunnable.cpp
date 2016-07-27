@@ -32,7 +32,7 @@ bool HcaRunnable::connect()
 
 bool HcaRunnable::findUser()
 {
-
+    return false;
 }
 
 void HcaRunnable::createUser()

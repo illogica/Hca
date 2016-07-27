@@ -18,7 +18,9 @@ SOURCES += main.cpp \
     world.cpp \
     hcathreadpool.cpp \
     hcathread.cpp \
-    hcarunnable.cpp
+    hcarunnable.cpp \
+    loginworker.cpp \
+    hcaworker.cpp
 
 HEADERS += \
     hcaserver.h \
@@ -32,7 +34,9 @@ HEADERS += \
     hcathread.h \
     pingrunnable.h \
     loginrunnable.h \
-    hcarunnable.h
+    hcarunnable.h \
+    loginworker.h \
+    hcaworker.h
 
 DISTFILES += \
     Protocol.txt \

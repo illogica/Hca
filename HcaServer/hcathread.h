@@ -11,19 +11,22 @@ class HcaThread : public QThread
 {
     Q_OBJECT
 public:
-    HcaThread(int id, HcaServer* srv);
+    HcaThread(){}
+    ~HcaThread(){}
     void run() Q_DECL_OVERRIDE;
 
-public slots:
-    void testText();
+    QSqlDatabase db() const;
+
+    QString id() const;
 
 signals:
-    void initialized(int id);
+    void initialized(HcaThread*);
+    void setThreadStatus(QString t_id, bool available);
 
 private:
-    QSqlDatabase db;
-    int m_id;
-    HcaServer* server;
+    QSqlDatabase m_db;
+    QString m_id;
 };
 
+Q_DECLARE_METATYPE(HcaThread*)
 #endif // HCATHREAD_H

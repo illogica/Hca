@@ -1,34 +1,29 @@
 #include "hcathread.h"
 #include "hcaserver.h"
 
-HcaThread::HcaThread(int id, HcaServer* srv)
-{
-    m_id = id;
-    server = srv;
-}
-
 void HcaThread::run()
 {
+    m_id = QString::number((qintptr)QThread::currentThreadId());
     if (!QSqlDatabase::drivers().contains("QPSQL")){
         qWarning() << "Unable to load database, PSQL driver missing";
         return;
     }
     qWarning() << "Thread: " << QThread::currentThreadId();
-    connect(server, &HcaServer::testThread, this, &HcaThread::testText);
 
-    db = QSqlDatabase::addDatabase("QPSQL", QString(m_id));
-    db.setHostName("127.0.0.1");
-    db.setDatabaseName("hca");
-    db.setUserName("hca");
+    m_db = QSqlDatabase::addDatabase("QPSQL", QString(m_id));
+    m_db.setHostName("127.0.0.1");
+    m_db.setDatabaseName("hca");
+    m_db.setUserName("hca");
     //db.setPassword("");
-    if(!db.open()){
-        qWarning() << db.lastError().text();
+    if(!m_db.open()){
+        qWarning() << "Error opening database: " << m_db.lastError().text();
     } else {
-        emit initialized(m_id);
+        emit initialized(this);
         exec();
     }
 }
 
-void HcaThread::testText(){
-    qWarning() << "TestText from " << QThread::currentThreadId();
-}
+QSqlDatabase HcaThread::db() const {return m_db;}
+
+QString HcaThread::id() const {return m_id;}
+

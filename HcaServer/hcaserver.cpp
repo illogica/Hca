@@ -1,8 +1,7 @@
 #include "hcaserver.h"
 #include <QElapsedTimer>
 #include "pingrunnable.h"
-#include "loginrunnable.h"
-#include "hcarunnable.h"
+#include "loginworker.h"
 
 HcaServer::HcaServer(QObject *parent) : QObject(parent)
 {
@@ -18,9 +17,7 @@ HcaServer::HcaServer(QObject *parent) : QObject(parent)
 
 void HcaServer::init()
 {
-    qWarning() << "Main thread: " << QThread::currentThreadId();
-    QThreadPool::globalInstance()->setMaxThreadCount(16);
-    qWarning() << "Maximum threads: " << QThreadPool::globalInstance()->maxThreadCount();
+    m_tp = new HcaThreadPool(this);
 
     if (!QSqlDatabase::drivers().contains("QPSQL")){
         qWarning() << "Unable to load database, PSQL driver missing";
@@ -129,17 +126,19 @@ void HcaServer::onTextMessage(QString msg)
         connect(lr, &LoginRunnable::dbError, this, &HcaServer::onDbError);
         QThreadPool::globalInstance()->start(lr);
         qWarning() << "Started login runnable...";*/
-        HcaRunnable *lr  = new HcaRunnable();
-                //lr->socket = socket;
-                //lr->uuid = docObj[UUID].toString();
-                connect(lr, &HcaRunnable::loginResult, this, &HcaServer::onLoginResult);
-                connect(lr, &HcaRunnable::dbError, this, &HcaServer::onDbError);
-                connect(this, &HcaServer::testThread, lr, &HcaRunnable::login, Qt::QueuedConnection);
-                QThreadPool::globalInstance()->start(lr);
-                qWarning() << "Started login runnable...";
 
-                emit testThread();
+        QPointer<LoginWorker> w = new LoginWorker();
+        w->uuid = docObj[UUID].toString();
+        w->socket = socket;
+        //w->moveToThread(t);
+        //connect(this, &HcaServer::doLoginWork, w, &LoginWorker::doWork);
+        connect(w, &LoginWorker::loginResult, this, &HcaServer::onLoginResult);
+        connect(w, &LoginWorker::loginResult, w, &LoginWorker::deleteLater);
+        m_tp->push(w);
 
+        //emit doLoginWork(t);
+        //qRegisterMetaType<HcaThread*>();
+        //QMetaObject::invokeMethod(w, "doWork", Qt::QueuedConnection, Q_ARG(HcaThread*, t));
 
         /*Client *c = findClient(uuid);
         if(!c){
