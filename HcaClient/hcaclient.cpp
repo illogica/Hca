@@ -81,8 +81,9 @@ void HcaClient::parseServerMessage(const QString &message)
         QJsonArray::iterator it;
         for(it = worlds.begin(); it!=worlds.end(); it++){
             QJsonObject obj = (*it).toObject();
-            WorldData *w = findWorld(obj[WORLD_NAME].toString());
+            WorldData *w = findWorld(obj[WORLD_ID].toInt());
             if(!w){ w = new WorldData(this); m_worlds.append(w);}
+            w->setId(obj[WORLD_ID].toInt());
             w->setName(obj[WORLD_NAME].toString());
             w->setDescription(obj[DESCRIPTION].toString());
             w->setSize(obj[WORLD_SIZE].toInt());
@@ -93,7 +94,7 @@ void HcaClient::parseServerMessage(const QString &message)
             bool found = false;
             for(it = worlds.begin(); it!=worlds.end(); it++){
                 QJsonObject obj = (*it).toObject();
-                if(obj[WORLD_NAME].toString() == w->name()){
+                if(obj[WORLD_ID].toInt() == w->id()){
                     found = true;
                     break;
                 }
@@ -104,7 +105,7 @@ void HcaClient::parseServerMessage(const QString &message)
         //Share the data with the QML side
         qDeleteAll(m_worldsModel.begin(), m_worldsModel.end());
         for(WorldData *w : m_worlds){
-            m_worldsModel.append(new WorldData(w->name(), w->description(), w->size()));
+            m_worldsModel.append(new WorldData(w->id(), w->name(), w->description(), w->size()));
         }
         ctx->setContextProperty("wlModel", QVariant::fromValue(m_worldsModel));
 
@@ -113,8 +114,8 @@ void HcaClient::parseServerMessage(const QString &message)
 
     case LIST_ROOMS:
     {
-        QString world = docObj[WORLD_NAME].toString();
-        WorldData *w = findWorld(world);
+        qint32 worldId = docObj[WORLD_ID].toInt();
+        WorldData *w = findWorld(worldId);
         if(!w) return;
 
         QJsonArray rooms = docObj[ROOMS].toArray();
@@ -144,9 +145,9 @@ void HcaClient::parseServerMessage(const QString &message)
     }
 }
 
-void HcaClient::joinRoom(const QString &roomName, const QString &worldName)
+void HcaClient::joinRoom(int roomId)
 {
-    QString rName = roomName.trimmed();
+    /*QString rName = roomName.trimmed();
     if(rName.length() < 3 || rName.length()>32) return;
     QString wName = worldName.trimmed();
     if(wName.length() < 3 || wName.length()>32) return;
@@ -157,20 +158,27 @@ void HcaClient::joinRoom(const QString &roomName, const QString &worldName)
     request[ROOM_NAME] = rName;
     QJsonDocument doc;
     doc.setObject(request);
+    socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));*/
+    QJsonObject request;
+    request[REQUEST] = JOIN_ROOM;
+    request[ROOM_ID] = roomId;
+    QJsonDocument doc;
+    doc.setObject(request);
     socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
 }
 
-void HcaClient::leaveRoom(const QString &roomName, const QString &worldName)
+void HcaClient::createRoom(const QString name, const QString description, const QString motd)
 {
-    QString rName = roomName.trimmed();
-    if(rName.length() < 3 || rName.length()>32) return;
-    QString wName = worldName.trimmed();
-    if(wName.length() < 3 || wName.length()>32) return;
+    Q_UNUSED(name);
+    Q_UNUSED(description);
+    Q_UNUSED(motd);
+}
 
+void HcaClient::leaveRoom(int roomId)
+{
     QJsonObject request;
     request[REQUEST] = LEAVE_ROOM;
-    request[WORLD_NAME] = wName;
-    request[ROOM_NAME] = rName;
+    request[ROOM_ID] = roomId;
     QJsonDocument doc;
     doc.setObject(request);
     socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
@@ -199,25 +207,22 @@ void HcaClient::sendPing()
     }
 }
 
-void HcaClient::sendGetRoomsList(const QString &worldName)
+void HcaClient::sendGetRoomsList(qint32 worldId)
 {
-    QString name = worldName.trimmed();
-    if(name.length() < 3 || name.length()>32) return;
-
     if(m_connected){
         QJsonObject request;
         request[REQUEST] = LIST_ROOMS;
-        request[WORLD_NAME] = name;
+        request[WORLD_ID] = worldId;
         QJsonDocument doc;
         doc.setObject(request);
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
     }
 }
 
-WorldData *HcaClient::findWorld(const QString &name)
+WorldData *HcaClient::findWorld(int worldId)
 {
     for(WorldData *w : m_worlds){
-        if(w->name()==name)
+        if(w->id()==worldId)
             return w;
     }
     return nullptr;

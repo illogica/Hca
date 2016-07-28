@@ -6,7 +6,8 @@ DROP TABLE IF EXISTS worlds;
 DROP TABLE IF EXISTS clients;
 
 CREATE TABLE clients(
-uuid VARCHAR(40) primary key,
+id SERIAL PRIMARY KEY,
+uuid VARCHAR(40) UNIQUE NOT NULL,
 name VARCHAR(255),
 description text,
 privilege SMALLINT,
@@ -28,15 +29,16 @@ CREATE TABLE rooms(
 id SERIAL PRIMARY KEY,
 name VARCHAR(255),
 description text,
-world INTEGER REFERENCES worlds(id),
-owner varchar(40) REFERENCES clients(uuid)
+motd text,
+worldid INTEGER REFERENCES worlds(id),
+ownerid INTEGER REFERENCES clients(id)
 );
 
-INSERT INTO rooms(id, name, description, world)
+INSERT INTO rooms(id, name, description, worldid)
  VALUES(0, 'Lounge', 'The public Hca Lounge!', 0);
 
 CREATE TABLE roomclients(
 id SERIAL PRIMARY KEY,
 room INTEGER REFERENCES rooms(id),
-client VARCHAR(40) REFERENCES clients(uuid)
+clientid INTEGER REFERENCES clients(id)
 );

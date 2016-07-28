@@ -4,8 +4,8 @@ WorldData::WorldData(QObject *parent) : QObject(parent)
 {
 }
 
-WorldData::WorldData(const QString &name, const QString &description, int size, QObject *parent)
-    : QObject(parent), m_name(name), m_description(description), m_size(size)
+WorldData::WorldData(int id, const QString &name, const QString &description, int size, QObject *parent)
+    : QObject(parent), m_id(id), m_name(name), m_description(description), m_size(size)
 {
 }
 
@@ -42,6 +42,19 @@ void WorldData::setSize(int size)
     if(m_size != size){
         m_size = size;
         emit sizeChanged();
+    }
+}
+
+int WorldData::id() const
+{
+    return m_id;
+}
+
+void WorldData::setId(int id)
+{
+    if(m_id != id){
+        m_id = id;
+        emit idChanged();
     }
 }
 

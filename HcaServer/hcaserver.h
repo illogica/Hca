@@ -37,6 +37,8 @@ public slots:
 
     void onPingResult(QByteArray, QWebSocket*);
     void onLoginResult(QByteArray, QWebSocket*, QString);
+    void onListWorldsResult(QByteArray, QWebSocket*);
+    void onListRoomsResult(QByteArray, QWebSocket*);
     void onDisconnectResult();
 
     void onDbError(QString error);
@@ -46,7 +48,7 @@ private:
     QList<QWebSocket *> onlineSockets; //list of active sockets
 
     //store the relation between client uuids and sockets
-    QHash<QWebSocket*, QString> clients;
+    QHash<QWebSocket*, QString> clientsBySocket;
     QWebSocketServer *socketServer;
 };
 

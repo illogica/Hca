@@ -26,17 +26,18 @@ public slots:
     void onConnected();
     void onDisconnected();
     void parseServerMessage(const QString &message);
-    void joinRoom(const QString &roomName, const QString &worldName);
-    void leaveRoom(const QString &roomName, const QString &worldName);
+    void joinRoom(int roomId);
+    void createRoom(const QString name, const QString description, const QString motd);
+    void leaveRoom(int roomId);
 
     //communication
     void sendLogin();
     void sendPing();
     void sendGetWorldsList();
-    void sendGetRoomsList(const QString &worldName);
+    void sendGetRoomsList(int worldId);
 
     //utils
-    WorldData* findWorld(const QString &name);
+    WorldData* findWorld(int worldId);
 
     //Properties stuff
     bool connected();

@@ -3,6 +3,8 @@
 #include "pingrunnable.h"
 #include "loginworker.h"
 #include "disconnectworker.h"
+#include "listworldsworker.h"
+#include "listroomsworker.h"
 
 HcaServer::HcaServer(QObject *parent) : QObject(parent)
 {
@@ -77,66 +79,26 @@ void HcaServer::onTextMessage(QString msg)
         m_tp->push(w);
     } break;
 
-    /*case LIST_WORLDS:
+    case LIST_WORLDS:
     {
-        Client *c = findClient(socket);
-        if(!c){
-            socket->sendTextMessage(makeErrorMessage("Client not found").toJson(QJsonDocument::Compact));
-            return;
-        }
-
-        QJsonArray worldsList;
-        for(World *w : worlds){
-            QJsonObject worldObj;
-            worldObj[WORLD_NAME]=w->name();
-            worldObj[DESCRIPTION]=w->description();
-            worldObj[WORLD_SIZE]=w->size();
-            worldsList.append(worldObj);
-        }
-
-        QJsonObject response;
-        response[REQUEST] = LIST_WORLDS;
-        response[WORLDS] = worldsList;
-        QJsonDocument doc;
-        doc.setObject(response);
-        emit c->queueTextMessage(doc.toJson(QJsonDocument::Compact));
-        qWarning() << "Client " << c->name() << " requested world list";
+        QPointer<ListWorldsWorker> w = new ListWorldsWorker();
+        w->socket = socket;
+        connect(w, &ListWorldsWorker::listWorldsResult, this, &HcaServer::onListWorldsResult);
+        connect(w, &ListWorldsWorker::listWorldsResult, w, &ListWorldsWorker::deleteLater);
+        m_tp->push(w);
     } break;
 
     case LIST_ROOMS:
     {
-        Client *c = findClient(socket);
-        if(!c){
-            socket->sendTextMessage(makeErrorMessage("Client not found").toJson(QJsonDocument::Compact));
-            return;
-        }
-
-        QString world = docObj[WORLD_NAME].toString();
-        World *w = findWorld(world);
-        if(!w){
-            socket->sendTextMessage(makeErrorMessage("World not found").toJson(QJsonDocument::Compact));
-            return;
-        }
-
-        QJsonArray roomsList;
-        for(Room *r : w->rooms()){
-            QJsonObject roomObj;
-            roomObj[WORLD_NAME]=w->name();
-            roomObj[ROOM_NAME]=r->name();
-            roomObj[DESCRIPTION]=r->description();
-            roomObj[ROOM_SIZE]=r->size();
-            roomsList.append(roomObj);
-        }
-
-        QJsonObject response;
-        response[REQUEST] = LIST_ROOMS;
-        response[ROOMS] = roomsList;
-        QJsonDocument doc;
-        doc.setObject(response);
-        emit c->queueTextMessage(doc.toJson(QJsonDocument::Compact));
-        qWarning() << "Client " << c->name() << " requested rooms list";
+        qint32 worldId = docObj[WORLD_ID].toInt();
+        QPointer<ListRoomsWorker> w = new ListRoomsWorker();
+        w->socket = socket;
+        w->worldId = worldId;
+        connect(w, &ListRoomsWorker::listRoomsResult, this, &HcaServer::onListRoomsResult);
+        connect(w, &ListRoomsWorker::listRoomsResult, w, &ListRoomsWorker::deleteLater);
+        m_tp->push(w);
     } break;
-
+/*
     case JOIN_ROOM:
     {
         Client *c = findClient(socket);
@@ -222,13 +184,13 @@ void HcaServer::onSocketDisconnected()
     onlineSockets.removeOne(socket); //even if it's not there
 
     //if there's a client with that socket, set it as "offline"
-    if(clients.contains(socket)){
+    if(clientsBySocket.contains(socket)){
         QPointer<DisconnectWorker> w = new DisconnectWorker();
-        w->uuid = clients.value(socket);
+        w->uuid = clientsBySocket.value(socket);
         connect(w, &DisconnectWorker::disconnectResult, this, &HcaServer::onDisconnectResult);
         connect(w, &DisconnectWorker::disconnectResult, w, &DisconnectWorker::deleteLater);
         m_tp->push(w);
-        clients.remove(socket);
+        clientsBySocket.remove(socket);
     }
 
     qWarning() << "Online clients: " << onlineSockets.size();
@@ -243,7 +205,21 @@ void HcaServer::onLoginResult(QByteArray result, QWebSocket* sck, QString uuid)
 {
     if(onlineSockets.contains(sck)){
         sck->sendTextMessage(result);
-        clients.insert(sck, uuid);
+        clientsBySocket.insert(sck, uuid);
+    }
+}
+
+void HcaServer::onListWorldsResult(QByteArray result, QWebSocket* sck)
+{
+    if(onlineSockets.contains(sck)){ //use clientsBySocket to make sure the user is logged in
+        sck->sendTextMessage(result);
+    }
+}
+
+void HcaServer::onListRoomsResult(QByteArray result, QWebSocket* sck)
+{
+    if(onlineSockets.contains(sck)){ //use clientsBySocket to make sure the user is logged in
+        sck->sendTextMessage(result);
     }
 }
 

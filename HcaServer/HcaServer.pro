@@ -20,7 +20,9 @@ SOURCES += main.cpp \
     hcathread.cpp \
     loginworker.cpp \
     hcaworker.cpp \
-    disconnectworker.cpp
+    disconnectworker.cpp \
+    listworldsworker.cpp \
+    listroomsworker.cpp
 
 HEADERS += \
     hcaserver.h \
@@ -35,7 +37,9 @@ HEADERS += \
     pingrunnable.h \
     loginworker.h \
     hcaworker.h \
-    disconnectworker.h
+    disconnectworker.h \
+    listworldsworker.h \
+    listroomsworker.h
 
 DISTFILES += \
     Protocol.txt \

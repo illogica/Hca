@@ -34,6 +34,19 @@ void RoomData::setSize(int size)
     }
 }
 
+int RoomData::id() const
+{
+    return m_id;
+}
+
+void RoomData::setId(int id)
+{
+    if(m_id != id){
+        m_id = id;
+        emit idChanged();
+    }
+}
+
 QString RoomData::name()
 {
     return m_name;
