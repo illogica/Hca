@@ -39,6 +39,6 @@ INSERT INTO rooms(id, name, description, worldid)
 
 CREATE TABLE roomclients(
 id SERIAL PRIMARY KEY,
-room INTEGER REFERENCES rooms(id),
+roomid INTEGER REFERENCES rooms(id),
 clientid INTEGER REFERENCES clients(id)
 );
