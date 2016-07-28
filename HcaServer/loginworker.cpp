@@ -61,10 +61,11 @@ void LoginWorker::doWork(HcaThread *t)
 {
     QElapsedTimer totalTime;
     totalTime.start();
-    emit(t->setThreadStatus(m_id, false)); //this must always be the first
 
     m_id = t->id();
     m_db = t->db();
+    emit(t->setThreadStatus(m_id, false)); //this must always be the first
+
 
     if(!findUser()){
         createUser();

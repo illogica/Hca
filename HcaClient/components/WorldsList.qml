@@ -6,6 +6,8 @@ Item {
     height: 640
     width: 480
 
+    property alias model: listViewWorlds.model
+
     signal clicked(int id)
 
     ListView {
@@ -16,41 +18,7 @@ Item {
         model: tempModel
 
         delegate:
-            Item {
-                id: container
-                width: ListView.view.width; height: 60; anchors.leftMargin: 10; anchors.rightMargin: 10
-
-                Rectangle {
-                    id: content
-                    anchors.centerIn: parent; width: container.width - 40; height: container.height - 10
-                    color: "transparent"
-                    antialiasing: true
-                    radius: 10
-
-                    Rectangle { anchors.fill: parent; anchors.margins: 3; color: "#91AA9D"; antialiasing: true; radius: 8 }
-                }
-
-                Text {
-                    id: label
-                    anchors.centerIn: content
-                    text: "List element " + (index + 1)
-                    color: "#193441"
-                    font.pixelSize: 14
-                }
-
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-
-                    onClicked: {
-                        container.ListView.view.currentIndex = index
-                        container.forceActiveFocus()
-                        console.log("Clicked");
-                    }
-                }
-
-            /*Rectangle {
+            Rectangle {
             id: listViewWorldsDelegate
 
             //Component.onCompleted: console.warn("Name: " + modelData.name + ", " + modelData.id)
@@ -74,7 +42,7 @@ Item {
                     console.log("Clicked: ")
                     //root.clicked(model_id)
                 }
-            }*/
+            }
         }
     }
 

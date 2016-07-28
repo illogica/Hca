@@ -18,6 +18,8 @@ void HcaServer::init()
     if (!QSqlDatabase::drivers().contains("QPSQL")){
         qWarning() << "Unable to load database, PSQL driver missing";
         return;
+    } else {
+        qWarning() << "PSQL driver found, you are good to go!";
     }
 
     socketServer = new QWebSocketServer(QStringLiteral("Hca Server"), QWebSocketServer::NonSecureMode, this);

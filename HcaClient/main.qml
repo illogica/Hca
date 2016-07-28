@@ -4,6 +4,8 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
 
+import "components" 1.0
+
 ApplicationWindow{
     id: root
     visible: true
@@ -94,26 +96,9 @@ ApplicationWindow{
                     onClicked: stackView.push(roomsView)
                 }*/
 
-                ListView {
-                    id: listWorldsTemp
-
-                    anchors.fill: parent
-                    model: wlModel
-
-                    delegate:
-                        Rectangle {
-
-                        Component.onCompleted: console.warn("Name: " + modelData.name)
-
-                        color: Qt.rgba(0.5,0.1,0.1,0.5)
-
-                        width: 180; height: 40
-                        Column {
-                            Text { text: '<b>Name:</b> ' + name}
-                            Text { text: '<b>Size:</b> ' + model.modelData.size }
-                        }
-                    }
-               // }
+            WorldsList{
+                id: worldsList
+                model: wlModel
             }
         }
 

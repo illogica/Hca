@@ -5,9 +5,9 @@ ListRoomsWorker::ListRoomsWorker(){}
 
 void ListRoomsWorker::doWork(HcaThread *t)
 {
-    emit(t->setThreadStatus(m_id, false)); //this must always be the first
     m_id = t->id();
     m_db = t->db();
+    emit(t->setThreadStatus(m_id, false)); //this must always be the first
 
     QJsonArray roomsList;
     QSqlQuery query(m_db);

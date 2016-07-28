@@ -20,3 +20,6 @@ HEADERS += \
     hcaclient.h \
     roomdata.h \
     worlddata.h
+
+DISTFILES += \
+    components/qmldir

@@ -19,7 +19,6 @@ SOURCES += main.cpp \
     hcathreadpool.cpp \
     hcathread.cpp \
     loginworker.cpp \
-    hcaworker.cpp \
     disconnectworker.cpp \
     listworldsworker.cpp \
     listroomsworker.cpp

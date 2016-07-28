@@ -3,9 +3,9 @@
 
 void DisconnectWorker::doWork(HcaThread *t)
 {
-    emit(t->setThreadStatus(m_id, false)); //this must always be the first
     m_id = t->id();
     m_db = t->db();
+    emit(t->setThreadStatus(m_id, false)); //this must always be the first
 
     QSqlQuery updQuery(m_db);
     updQuery.prepare("UPDATE clients SET status = :st WHERE uuid = :uuid");

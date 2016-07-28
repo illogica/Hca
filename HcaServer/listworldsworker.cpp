@@ -7,9 +7,9 @@ ListWorldsWorker::ListWorldsWorker(){}
 
 void ListWorldsWorker::doWork(HcaThread *t)
 {
-    emit(t->setThreadStatus(m_id, false)); //this must always be the first
     m_id = t->id();
     m_db = t->db();
+    emit(t->setThreadStatus(m_id, false)); //this must always be the first
 
     QJsonArray worldsList;
     QSqlQuery query("SELECT * FROM worlds", m_db);
@@ -22,7 +22,7 @@ void ListWorldsWorker::doWork(HcaThread *t)
 
         //get the world quantity of rooms
         QSqlQuery sizeQuery(m_db);
-        sizeQuery.prepare("SELECT COUNT(*) FROM rooms WHERE rooms.world = :id");
+        sizeQuery.prepare("SELECT COUNT(*) FROM rooms WHERE rooms.worldid = :id");
         sizeQuery.bindValue(":id", worldId);
         if(!sizeQuery.exec())
             emit dbError(sizeQuery.lastError().text());
