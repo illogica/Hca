@@ -2,9 +2,13 @@
 #define PROTOCOL_H
 
 #define REQUEST "request"
+#define ID "id"
 #define UUID "uuid"
 #define NAME "name"
 #define ERROR_BODY "error_body"
+#define STATUS "status"
+#define PRIVILEGE "privilege"
+#define AVATAR "avatar"
 #define ROOMS "rooms"
 #define ROOM_ID "room_id"
 #define ROOM_NAME "room_name"

@@ -8,7 +8,7 @@ bool LoginWorker::findUser()
 {
     QSqlQuery query(m_db);
     query.prepare("SELECT * FROM clients WHERE uuid = :uuid");
-    query.bindValue(":uuid", uuid);
+    query.bindValue(":uuid", client.uuid());
     if(!query.exec()){
         qWarning() << "Error in " << query.lastQuery();
         emit dbError(query.lastError().text());
@@ -17,14 +17,17 @@ bool LoginWorker::findUser()
 
     if(query.next()){
         qWarning() << "User found, updating state in new Thread";
-        name = query.value(1).toString();
-        desc = query.value(2).toString();
-        priv = query.value(3).toInt();
-        status = query.value(4).toInt();
+        client.setId(query.value(0).toInt());
+        client.setName(query.value(1).toString());
+        client.setUuid(query.value(2).toString());
+        client.setDescription(query.value(3).toString());
+        client.setPrivilege(query.value(4).toInt());
+        client.setStatus(query.value(5).toInt());
+        client.setAvatar(query.value(6).toString());
         QSqlQuery updQuery(m_db);
-        updQuery.prepare("UPDATE clients SET status = :st WHERE uuid = :uuid");
+        updQuery.prepare("UPDATE clients SET status = :st WHERE id = :id");
         updQuery.bindValue(":st", ONLINE);
-        updQuery.bindValue(":uuid", uuid);
+        updQuery.bindValue(":id", client.id());
         if(!updQuery.exec()){
             emit dbError(updQuery.lastError().text());
             return false;
@@ -35,24 +38,28 @@ bool LoginWorker::findUser()
 void LoginWorker::createUser()
 {
     qWarning() << "User NOT found, creating it in new Thread";
-    name = QStringLiteral("unnamed");
-    desc = QStringLiteral("");
-    priv = USER;
-    status = ONLINE;
-    uuid = QUuid::createUuid().toString();
+    client.setName(QStringLiteral("unnamed"));
+    client.setDescription(QStringLiteral(""));
+    client.setPrivilege(USER);
+    client.setStatus(ONLINE);
+    client.setUuid(QUuid::createUuid().toString());
+    client.setAvatar(QStringLiteral("1f42a"));
 
     QSqlQuery insQuery(m_db);
-    insQuery.prepare("INSERT INTO clients(uuid, name, description, privilege, status) VALUES (:uuid, :name, :description, :privilege, :status)");
-    insQuery.bindValue(0, uuid);
-    insQuery.bindValue(1, name);
-    insQuery.bindValue(2, desc);
-    insQuery.bindValue(3, priv);
-    insQuery.bindValue(4, status);
+    insQuery.prepare("INSERT INTO clients(uuid, name, description, privilege, status, avatar) VALUES (:uuid, :name, :description, :privilege, :status, :avatar) RETURNING id");
+    insQuery.bindValue(0, client.uuid());
+    insQuery.bindValue(1, client.name());
+    insQuery.bindValue(2, client.description());
+    insQuery.bindValue(3, client.privilege());
+    insQuery.bindValue(4, client.status());
+    insQuery.bindValue(5, client.avatar());
     if(!insQuery.exec()){
         qWarning() << "Error in " << insQuery.lastQuery();
         emit dbError(insQuery.lastError().text());
         return;
     } else {
+        insQuery.next();
+        client.setId(insQuery.value(0).toInt());
         qWarning() << "User created";
     }
 }
@@ -71,14 +78,13 @@ void LoginWorker::doWork(HcaThread *t)
         createUser();
     }
 
-    QJsonObject response;
+    QJsonObject response = client.toFullJsonObject();
     response[REQUEST] = LOGIN;
-    response[NAME] = name;
-    response[UUID] = uuid;
     QJsonDocument doc;
     doc.setObject(response);
     qWarning() << "Emitting login from " << QThread::currentThreadId();
-    emit loginResult(doc.toJson(QJsonDocument::Compact), socket, uuid);
+    emit loginResult(doc.toJson(QJsonDocument::Compact), socket, client.id());
+
     emit(t->setThreadStatus(m_id, true)); //this must always be the last
     qWarning() << "loginRequest evaded in " << totalTime.elapsed() << "ms";
 }

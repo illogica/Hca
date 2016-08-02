@@ -11,10 +11,11 @@ uuid VARCHAR(40) UNIQUE NOT NULL,
 name VARCHAR(255),
 description text,
 privilege SMALLINT,
-status SMALLINT
+status SMALLINT,
+avatar VARCHAR(255)
 );
-INSERT INTO clients(uuid, name, description, privilege, status)
- VALUES('test-key', 'unnamed', 'description text', 0, 0);
+INSERT INTO clients(uuid, name, description, privilege, status, avatar)
+ VALUES('test-key', 'unnamed', 'description text', 0, 0, '1f42a');
 
 CREATE TABLE worlds(
 id SERIAL PRIMARY KEY,

@@ -13,6 +13,7 @@ HcaServer::HcaServer(QObject *parent) : QObject(parent)
 
 void HcaServer::init()
 {
+    qWarning() << "Main Thread: " << QThread::currentThreadId();
     m_tp = new HcaThreadPool(this);
 
     if (!QSqlDatabase::drivers().contains("QPSQL")){
@@ -74,7 +75,7 @@ void HcaServer::onTextMessage(QString msg)
     case LOGIN:
     {
         QPointer<LoginWorker> w = new LoginWorker();
-        w->uuid = docObj[UUID].toString();
+        w->client.setUuid(docObj[UUID].toString());
         w->socket = socket;
         connect(w, &LoginWorker::loginResult, this, &HcaServer::onLoginResult);
         connect(w, &LoginWorker::loginResult, w, &LoginWorker::deleteLater);
@@ -186,13 +187,13 @@ void HcaServer::onSocketDisconnected()
     onlineSockets.removeOne(socket); //even if it's not there
 
     //if there's a client with that socket, set it as "offline"
-    if(clientsBySocket.contains(socket)){
+    if(clientsBySocketDELETEME.contains(socket)){
         QPointer<DisconnectWorker> w = new DisconnectWorker();
-        w->uuid = clientsBySocket.value(socket);
+        w->uuid = clientsBySocketDELETEME.value(socket);
         connect(w, &DisconnectWorker::disconnectResult, this, &HcaServer::onDisconnectResult);
         connect(w, &DisconnectWorker::disconnectResult, w, &DisconnectWorker::deleteLater);
         m_tp->push(w);
-        clientsBySocket.remove(socket);
+        clientsBySocketDELETEME.remove(socket);
     }
 
     qWarning() << "Online clients: " << onlineSockets.size();
@@ -203,11 +204,11 @@ void HcaServer::onPingResult(QByteArray result, QWebSocket* sck)
     if(onlineSockets.contains(sck)) sck->sendTextMessage(result);
 }
 
-void HcaServer::onLoginResult(QByteArray result, QWebSocket* sck, QString uuid)
+void HcaServer::onLoginResult(QByteArray result, QWebSocket* sck, int id)
 {
     if(onlineSockets.contains(sck)){
         sck->sendTextMessage(result);
-        clientsBySocket.insert(sck, uuid);
+        clientsBySocket.insert(sck, id);
     }
 }
 

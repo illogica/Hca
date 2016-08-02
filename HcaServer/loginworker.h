@@ -6,6 +6,7 @@
 #include <QWebSocket>
 #include "hcathread.h"
 #include "hcaworker.h"
+#include "client.h"
 
 class LoginWorker : public HcaWorker
 {
@@ -19,9 +20,10 @@ public:
 
     QString uuid;
     QWebSocket* socket;
+    Client client;
 
 signals:
-    void loginResult(QByteArray, QWebSocket*, QString);
+    void loginResult(QByteArray, QWebSocket*, int);
     void dbError(QString error);
 
 public slots:
@@ -33,8 +35,8 @@ private:
     qint16 priv;
     qint16 status;
 
-    QSqlDatabase m_db;
-    QString m_id;
+    QSqlDatabase m_db; //Database instance
+    QString m_id; //Thread id
 };
 
 #endif // LOGINWORKER_H
