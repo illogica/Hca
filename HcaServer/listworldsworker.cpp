@@ -8,36 +8,20 @@ ListWorldsWorker::ListWorldsWorker(){}
 void ListWorldsWorker::doWork(HcaThread *t)
 {
     m_id = t->id();
-    m_db = t->db();
+    DbManager* dbm = t->dbManager();
     emit(t->setThreadStatus(m_id, false)); //this must always be the first
 
-    QJsonArray worldsList;
-    QSqlQuery query("SELECT * FROM worlds", m_db);
-    while(query.next()){
-        QJsonObject worldObj;
-        qint32 worldId = query.value(0).toInt();
-        worldObj[WORLD_ID]=worldId;
-        worldObj[WORLD_NAME]=query.value(1).toString();
-        worldObj[DESCRIPTION]=query.value(2).toString();
+    QJsonArray worldsArray;
 
-        //get the world quantity of rooms
-        QSqlQuery sizeQuery(m_db);
-        sizeQuery.prepare("SELECT COUNT(*) FROM rooms WHERE rooms.worldid = :id");
-        sizeQuery.bindValue(":id", worldId);
-        if(!sizeQuery.exec())
-            emit dbError(sizeQuery.lastError().text());
-        qint32 worldSize = 0;
-        if(sizeQuery.next()){
-            worldSize = sizeQuery.value(0).toInt();
-        }
-
-        worldObj[WORLD_SIZE]=worldSize;
-        worldsList.append(worldObj);
+    QList<World*> worlds;
+    dbm->listWorlds(worlds);
+    for(World *w:worlds){
+        worldsArray.append(w->toJsonObject());
     }
 
     QJsonObject response;
     response[REQUEST] = LIST_WORLDS;
-    response[WORLDS] = worldsList;
+    response[WORLDS] = worldsArray;
     QJsonDocument doc;
     doc.setObject(response);
 

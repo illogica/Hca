@@ -56,6 +56,88 @@ bool DbManager::findUserById(int id, Client* c)
     } return false;
 }
 
+bool DbManager::findRoomById(int id, Room *r)
+{
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM rooms WHERE id = :id");
+    query.bindValue(":id", id);
+    if(!query.exec()){
+        qWarning() << "Error in " << query.lastQuery();
+        qWarning() << "ERROR: " << query.lastError().text();
+        return false;
+    }
+    if(query.next()){
+        r->setId(query.value(0).toInt());
+        r->setName(query.value(1).toString());
+        r->setDescription(query.value(2).toString());
+        r->setMotd(query.value(3).toString());
+        r->setCount(countClients(r->id()));
+
+        int worldId = query.value(4).toInt();
+        int ownerId = query.value(5).toInt();
+
+        QPointer<World> w(new World(r));
+        findWorldById(worldId, w.data());
+        r->setWorld(w.data());
+
+        QPointer<Client> c(new Client(r));
+        findUserById(ownerId, c.data());
+        r->setOwner(c.data());
+
+        qWarning() << "Room found " << r->id();
+        return true;
+    } return false;
+}
+
+bool DbManager::findWorldById(int id, World *w)
+{
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM worlds WHERE id = :id");
+    query.bindValue(":id", id);
+    if(!query.exec()){
+        qWarning() << "Error in " << query.lastQuery();
+        qWarning() << "ERROR: " << query.lastError().text();
+        return false;
+    }
+    if(query.next()){
+        w->setId(query.value(0).toInt());
+        w->setName(query.value(1).toString());
+        w->setDescription(query.value(2).toString());
+        qWarning() << "World found " << w->id();
+        return true;
+    } return false;
+}
+
+bool DbManager::addClientToRoom(int clientId, int roomId)
+{
+    QSqlQuery insQuery(m_db);
+    insQuery.prepare("INSERT INTO roomclients(roomid, clientid) VALUES (:roomid, :clientid)");
+    insQuery.bindValue(":roomid", roomId);
+    insQuery.bindValue(":clientid", clientId);
+    if(!insQuery.exec()){
+        qWarning() << "ERROR: " << insQuery.lastError().text();
+        return false;
+    } else {
+        qWarning() << "User created";
+        return true;
+    }
+}
+
+bool DbManager::removeClientFromRoom(int clientId, int roomId)
+{
+    QSqlQuery delQuery(m_db);
+    delQuery.prepare("DELETE FROM roomclients WHERE roomid = :roomid AND clientid = :clientid)");
+    delQuery.bindValue(":roomid", roomId);
+    delQuery.bindValue(":clientid", clientId);
+    if(!delQuery.exec()){
+        qWarning() << "ERROR: " << delQuery.lastError().text();
+        return false;
+    } else {
+        qWarning() << "User left room";
+        return true;
+    }
+}
+
 void DbManager::createUser(Client *c)
 {
     c->setName(QStringLiteral("unnamed"));
@@ -80,6 +162,28 @@ void DbManager::createUser(Client *c)
         insQuery.next();
         c->setId(insQuery.value(0).toInt());
         qWarning() << "User created";
+    }
+}
+
+void DbManager::createRoom(QString &name, QString &description, QString &motd, int worldId, int ownerId, Room *r)
+{
+    r->setName(name);
+    r->setDescription(description);
+    r->setMotd(motd);
+    QSqlQuery insQuery(m_db);
+    insQuery.prepare("INSERT INTO rooms(name, description, motd, worldid, ownerid) VALUES (:name, :description, :motd, :worldid, :ownerid) RETURNING id");
+    insQuery.bindValue(":name", name);
+    insQuery.bindValue(":description", description);
+    insQuery.bindValue(":motd", motd);
+    insQuery.bindValue(":worldid", worldId);
+    insQuery.bindValue(":ownerid", ownerId);
+    if(!insQuery.exec()){
+        qWarning() << "Error in " << insQuery.lastQuery();
+        qWarning() << "ERROR: " << insQuery.lastError().text();
+    } else {
+        insQuery.next();
+        r->setId(insQuery.value(0).toInt());
+        qWarning() << "Room created";
     }
 }
 
@@ -109,4 +213,84 @@ void DbManager::updateClient(Client *c)
     if(!updQuery.exec()){
         qWarning() << "ERROR: " << updQuery.lastError().text();
     } //user found and updated
+}
+
+void DbManager::listWorlds(QList<World *>& worlds)
+{
+
+    QSqlQuery query("SELECT * FROM worlds", m_db);
+    while(query.next()){
+        QPointer<World> w(new World());
+        w->setId(query.value(0).toInt());
+        w->setName(query.value(1).toString());
+        w->setDescription(query.value(2).toString());
+        w->setCount(countRooms(w->id()));
+        worlds.append(w.data());
+    }
+}
+
+void DbManager::listRoomsByWorld(int worldId, QList<Room *>& rooms)
+{
+
+    QPointer<World> w(new World());
+    findWorldById(worldId, w.data());
+
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM rooms WHERE worldid = :worldId");
+    query.bindValue(":worldId", worldId);
+    if(!query.exec()){
+        qWarning() << "Error in " << query.lastQuery();
+        qWarning() << "ERROR: " << query.lastError().text();
+    }
+    while(query.next()){
+        QPointer<Room> r(new Room(w));
+        r->setId(query.value(0).toInt());
+        r->setName(query.value(1).toString());
+        r->setDescription(query.value(2).toString());
+        r->setMotd(query.value(3).toString());
+
+        r->setCount(countClients(r->id()));
+
+        QPointer<Client> c(new Client(r));
+        findUserById(query.value(5).toInt(), c.data());
+        r->setOwner(c.data());
+
+        r->setWorld(w);
+
+        rooms.append(r.data());
+    }
+}
+
+int DbManager::countRooms(int worldId)
+{
+    QSqlQuery sizeQuery(m_db);
+    sizeQuery.prepare("SELECT COUNT(*) FROM rooms WHERE rooms.worldid = :id");
+    sizeQuery.bindValue(":id", worldId);
+    if(!sizeQuery.exec()){
+        qWarning() << "ERROR: " << sizeQuery.lastError().text();
+        return 0;
+    }
+    if(sizeQuery.next()){
+        return sizeQuery.value(0).toInt();
+    } else {
+        qWarning() << "ERROR: world " << worldId << " not found "<< __FILE__ << __LINE__;
+        return 0;
+    }
+}
+
+int DbManager::countClients(int roomId)
+{
+    QSqlQuery sizeQuery(m_db);
+    sizeQuery.prepare("SELECT COUNT(*) FROM roomclients WHERE roomid = :id");
+    sizeQuery.bindValue(":id", roomId);
+    if(!sizeQuery.exec()){
+        qWarning() << "ERROR: " << sizeQuery.lastError().text();
+        return 0;
+    }
+    if(sizeQuery.next()){
+        return sizeQuery.value(0).toInt();
+    } else {
+        qWarning() << "ERROR: room " << roomId << " not found "<< __FILE__ << __LINE__;
+        return 0;
+    }
 }

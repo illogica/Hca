@@ -6,15 +6,25 @@
 #include <QJsonObject>
 #include "protocol.h"
 #include "client.h"
+//#include "world.h"
+
+class World;
+class Conversation;
 
 class Room : public QObject
 {
     Q_OBJECT
-    Q_FORWARD_DECLARE_OBJC_CLASS(Conversation);
+    //Q_FORWARD_DECLARE_OBJC_CLASS(Conversation);
 public:
     explicit Room(QObject *parent = 0);
-    quint32 id;
-    static quint32 idCounter;
+    ~Room(){
+        while(!m_masters.isEmpty()) delete m_masters.takeFirst();
+        while(!m_clients.isEmpty()) delete m_clients.takeFirst();
+        //while(!m_conversations.isEmpty()) delete m_conversations.takeFirst();
+    }
+
+    QJsonObject toJsonObject();
+
     bool isEmpty(){return m_clients.isEmpty();}
     int size(){return m_clients.size();}
 
@@ -30,6 +40,18 @@ public:
     QString description() const;
     void setDescription(const QString &description);
 
+    QString motd() const;
+    void setMotd(const QString &motd);
+
+    int id() const;
+    void setId(int id);
+
+    World *world() const;
+    void setWorld(World *world);
+
+    int count() const;
+    void setCount(int count);
+
 signals:
 
 public slots:
@@ -39,9 +61,14 @@ public slots:
 
 
 private:
+    int m_id;
+    int m_count;
     QString m_name;
     QString m_description;
-    Client *m_owner;
+    QString m_motd;
+    World* m_world;
+    Client* m_owner;
+
     QList<Client *> m_masters;  //room operators
     QList<Client *> m_clients;  //room users (and operators, too)
     QList<Conversation *> m_conversations;

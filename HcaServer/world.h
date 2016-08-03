@@ -2,6 +2,7 @@
 #define WORLD_H
 
 #include <QObject>
+#include <QJsonObject>
 #include "room.h"
 
 class World : public QObject
@@ -9,8 +10,11 @@ class World : public QObject
     Q_OBJECT
 public:
     explicit World(QObject *parent = 0);
-    quint32 id;
-    static quint32 idCounter;
+    ~World(){
+        while(!m_rooms.isEmpty()) delete m_rooms.takeFirst();
+    }
+
+    QJsonObject toJsonObject();
 
     int size() {return m_rooms.size();}
 
@@ -27,13 +31,21 @@ public:
     QString description() const;
     void setDescription(const QString &description);
 
+    int id() const;
+    void setId(int id);
+
+    int count() const;
+    void setCount(int count);
+
 signals:
 
 public slots:
 
 private:
+    int m_id;
     QString m_name;
     QString m_description;
+    int m_count;
     QList<Room *> m_rooms;
 };
 

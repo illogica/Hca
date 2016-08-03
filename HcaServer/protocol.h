@@ -12,11 +12,14 @@
 #define ROOMS "rooms"
 #define ROOM_ID "room_id"
 #define ROOM_NAME "room_name"
+#define ROOM_MOTD "room_motd"
 #define ROOM_SIZE "room_size"
+#define ROOM_COUNT "room_count"
 #define WORLDS "worlds"
 #define WORLD_ID "world_id"
 #define WORLD_NAME "world_name"
 #define WORLD_SIZE "world_size"
+#define WORLD_COUNT "world_count"
 #define DESCRIPTION "description"
 
 enum Privilege{

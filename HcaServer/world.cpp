@@ -1,10 +1,19 @@
 #include "world.h"
+#include "protocol.h"
 
-quint32 World::idCounter = 0;
 
 World::World(QObject *parent) : QObject(parent)
+{}
+
+QJsonObject World::toJsonObject()
 {
-    id = idCounter++;
+    QJsonObject o;
+    o[WORLD_ID] = m_id;
+    o[WORLD_NAME] = m_name;
+    o[DESCRIPTION] = m_description;
+    o[WORLD_SIZE] = m_rooms.size();
+    o[WORLD_COUNT] = m_count;
+    return o;
 }
 
 Room *World::findRoom(const QString &name)
@@ -57,4 +66,24 @@ QString World::description() const
 void World::setDescription(const QString &description)
 {
     m_description = description;
+}
+
+int World::id() const
+{
+    return m_id;
+}
+
+void World::setId(int id)
+{
+    m_id = id;
+}
+
+int World::count() const
+{
+    return m_count;
+}
+
+void World::setCount(int count)
+{
+    m_count = count;
 }

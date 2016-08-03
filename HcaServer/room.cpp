@@ -1,10 +1,18 @@
 #include "room.h"
 
-quint32 Room::idCounter = 0;
-
 Room::Room(QObject *parent) : QObject(parent)
+{}
+
+QJsonObject Room::toJsonObject()
 {
-    id = idCounter++;
+    QJsonObject o;
+    o[ROOM_ID] = m_id;
+    o[ROOM_NAME] = m_name;
+    o[DESCRIPTION] = m_description;
+    o[ROOM_MOTD] = m_motd;
+    o[ROOM_SIZE] = m_clients.size();
+    o[ROOM_COUNT] = m_count;
+    return o;
 }
 
 void Room::addClient(Client *client)
@@ -81,6 +89,46 @@ void Room::notifyChangeName(const QString &name)
     for(Client *c : m_clients){
         emit c->queueTextMessage(doc.toJson());
     }
+}
+
+int Room::count() const
+{
+    return m_count;
+}
+
+void Room::setCount(int count)
+{
+    m_count = count;
+}
+
+World *Room::world() const
+{
+    return m_world;
+}
+
+void Room::setWorld(World *world)
+{
+    m_world = world;
+}
+
+int Room::id() const
+{
+    return m_id;
+}
+
+void Room::setId(int id)
+{
+    m_id = id;
+}
+
+QString Room::motd() const
+{
+    return m_motd;
+}
+
+void Room::setMotd(const QString &motd)
+{
+    m_motd = motd;
 }
 
 QString Room::description() const

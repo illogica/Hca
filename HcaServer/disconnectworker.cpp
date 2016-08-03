@@ -16,7 +16,6 @@ void DisconnectWorker::doWork(HcaThread *t)
 
     c->setStatus(OFFLINE);
     dbm->updateClient(c.data());
-    qWarning() << "User disconnected - check status = 0 on PGADMIN";
     //user found and updated
 
     qWarning() << "Emitting disconnect from " << QThread::currentThreadId();
