@@ -14,7 +14,7 @@ public:
     DisconnectWorker(){}
     ~DisconnectWorker(){}
 
-    QString uuid;
+    int id;
 
 public slots:
     void doWork(HcaThread* t);
@@ -24,7 +24,6 @@ signals:
     void dbError(QString error);
 
 private:
-    QSqlDatabase m_db;
     QString m_id;
 };
 

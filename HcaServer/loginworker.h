@@ -20,7 +20,6 @@ public:
 
     QString uuid;
     QWebSocket* socket;
-    Client client;
 
 signals:
     void loginResult(QByteArray, QWebSocket*, int);
@@ -30,12 +29,6 @@ public slots:
     void doWork(HcaThread* t);
 
 private:
-    QString name;
-    QString desc;
-    qint16 priv;
-    qint16 status;
-
-    QSqlDatabase m_db; //Database instance
     QString m_id; //Thread id
 };
 

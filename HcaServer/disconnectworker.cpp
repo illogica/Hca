@@ -4,17 +4,19 @@
 void DisconnectWorker::doWork(HcaThread *t)
 {
     m_id = t->id();
-    m_db = t->db();
+    DbManager* dbm = t->dbManager();
     emit(t->setThreadStatus(m_id, false)); //this must always be the first
 
-    QSqlQuery updQuery(m_db);
-    updQuery.prepare("UPDATE clients SET status = :st WHERE uuid = :uuid");
-    updQuery.bindValue(":st", OFFLINE);
-    updQuery.bindValue(":uuid", uuid);
-    if(!updQuery.exec()){
-        qWarning() << "Error in " << updQuery.lastQuery();
-        emit dbError(updQuery.lastError().text());
-    };
+    QScopedPointer<Client> c(new Client(this));
+
+    if(!dbm->findUserById(id, c.data())){
+        qWarning() << "User not found, cannot update its state";
+        return;
+    }
+
+    c->setStatus(OFFLINE);
+    dbm->updateClient(c.data());
+    qWarning() << "User disconnected - check status = 0 on PGADMIN";
     //user found and updated
 
     qWarning() << "Emitting disconnect from " << QThread::currentThreadId();

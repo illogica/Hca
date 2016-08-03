@@ -75,7 +75,7 @@ void HcaServer::onTextMessage(QString msg)
     case LOGIN:
     {
         QPointer<LoginWorker> w = new LoginWorker();
-        w->client.setUuid(docObj[UUID].toString());
+        w->uuid = docObj[UUID].toString();
         w->socket = socket;
         connect(w, &LoginWorker::loginResult, this, &HcaServer::onLoginResult);
         connect(w, &LoginWorker::loginResult, w, &LoginWorker::deleteLater);
@@ -187,13 +187,13 @@ void HcaServer::onSocketDisconnected()
     onlineSockets.removeOne(socket); //even if it's not there
 
     //if there's a client with that socket, set it as "offline"
-    if(clientsBySocketDELETEME.contains(socket)){
+    if(clientsBySocket.contains(socket)){
         QPointer<DisconnectWorker> w = new DisconnectWorker();
-        w->uuid = clientsBySocketDELETEME.value(socket);
+        w->id = clientsBySocket.value(socket);
         connect(w, &DisconnectWorker::disconnectResult, this, &HcaServer::onDisconnectResult);
         connect(w, &DisconnectWorker::disconnectResult, w, &DisconnectWorker::deleteLater);
         m_tp->push(w);
-        clientsBySocketDELETEME.remove(socket);
+        clientsBySocket.remove(socket);
     }
 
     qWarning() << "Online clients: " << onlineSockets.size();

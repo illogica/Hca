@@ -21,7 +21,8 @@ SOURCES += main.cpp \
     loginworker.cpp \
     disconnectworker.cpp \
     listworldsworker.cpp \
-    listroomsworker.cpp
+    listroomsworker.cpp \
+    dbmanager.cpp
 
 HEADERS += \
     hcaserver.h \
@@ -38,7 +39,8 @@ HEADERS += \
     hcaworker.h \
     disconnectworker.h \
     listworldsworker.h \
-    listroomsworker.h
+    listroomsworker.h \
+    dbmanager.h
 
 DISTFILES += \
     Protocol.txt \
