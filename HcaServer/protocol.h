@@ -2,6 +2,7 @@
 #define PROTOCOL_H
 
 #define REQUEST "request"
+#define RESULT "result"
 #define ID "id"
 #define UUID "uuid"
 #define NAME "name"
@@ -15,6 +16,7 @@
 #define ROOM_MOTD "room_motd"
 #define ROOM_SIZE "room_size"
 #define ROOM_COUNT "room_count"
+#define ROOM_AVATAR "room_avatar"
 #define WORLDS "worlds"
 #define WORLD_ID "world_id"
 #define WORLD_NAME "world_name"
@@ -40,7 +42,8 @@ enum Request{
     PING,
     PONG,
     LOGIN,
-    JOIN_ROOM, //join or create is the same
+    CREATE_ROOM,
+    JOIN_ROOM,
     NOTIFY_JOIN_ROOM,
     NOTIFY_CHANGE_ROOM_NAME,
     LEAVE_ROOM,
@@ -49,7 +52,12 @@ enum Request{
     LIST_WORLDS,
     JOIN_WORLD,
     SEND_ROOM,
-    SEND_USER
+    SEND_USER,
+};
+
+enum Results{
+    DONE,
+    DENIED
 };
 
 #endif // PROTOCOL_H

@@ -52,6 +52,9 @@ public:
     int count() const;
     void setCount(int count);
 
+    QString avatar() const;
+    void setAvatar(const QString &avatar);
+
 signals:
 
 public slots:
@@ -66,6 +69,7 @@ private:
     QString m_name;
     QString m_description;
     QString m_motd;
+    QString m_avatar;
     World* m_world;
     Client* m_owner;
 

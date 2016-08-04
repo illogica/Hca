@@ -39,6 +39,9 @@ public slots:
     void onLoginResult(QByteArray, QWebSocket*, int);
     void onListWorldsResult(QByteArray, QWebSocket*);
     void onListRoomsResult(QByteArray, QWebSocket*);
+    void onJoinRoomResult(QByteArray, QWebSocket*);
+    void onCreateRoomResult(QByteArray, QWebSocket*);
+    void onLeaveRoomResult(QByteArray, QWebSocket*);
     void onDisconnectResult();
 
     void onDbError(QString error);
@@ -47,9 +50,8 @@ private:
     HcaThreadPool *m_tp;
     QList<QWebSocket *> onlineSockets; //list of active sockets
 
-    //store the relation between client uuids and sockets
+    //store the relation between client ids and sockets
     QHash<QWebSocket*, int> clientsBySocket;
-    QHash<QWebSocket*, QString> clientsBySocketDELETEME;
     QWebSocketServer *socketServer;
 };
 

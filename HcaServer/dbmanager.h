@@ -23,7 +23,7 @@ public:
     bool removeClientFromRoom(int clientId, int roomId);
 
     void createUser(Client* c);
-    void createRoom(QString& name, QString& description, QString& motd, int worldId, int ownerId, Room* r);
+    bool createRoom(QString& name, QString& description, QString& motd, int worldId, int ownerId, QString& avatar, Room* r);
     void updateClientStatus(int id, int status);
     void updateClient(Client* c);
 

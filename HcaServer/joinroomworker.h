@@ -1,5 +1,5 @@
-#ifndef LOGINWORKER_H
-#define LOGINWORKER_H
+#ifndef JOINROOMWORKER_H
+#define JOINROOMWORKER_H
 
 #include <QObject>
 #include <QWebSocket>
@@ -7,18 +7,19 @@
 #include "hcaworker.h"
 #include "client.h"
 
-class LoginWorker : public HcaWorker
+class JoinRoomWorker : public HcaWorker
 {
     Q_OBJECT
 public:
-    LoginWorker(){}
-    ~LoginWorker(){}
+    JoinRoomWorker(){}
+    ~JoinRoomWorker(){}
 
-    QString uuid;
     QWebSocket* socket;
+    int roomId;
+    int clientId;
 
 signals:
-    void loginResult(QByteArray, QWebSocket*, int);
+    void joinRoomResult(QByteArray, QWebSocket*);
     void dbError(QString error);
 
 public slots:
@@ -28,4 +29,4 @@ private:
     QString m_id; //Thread id
 };
 
-#endif // LOGINWORKER_H
+#endif // JOINROOMWORKER_H

@@ -22,7 +22,11 @@ SOURCES += main.cpp \
     disconnectworker.cpp \
     listworldsworker.cpp \
     listroomsworker.cpp \
-    dbmanager.cpp
+    dbmanager.cpp \
+    joinroomworker.cpp \
+    createroomworker.cpp \
+    templateworker.cpp \
+    leaveroomworker.cpp
 
 HEADERS += \
     hcaserver.h \
@@ -40,7 +44,11 @@ HEADERS += \
     disconnectworker.h \
     listworldsworker.h \
     listroomsworker.h \
-    dbmanager.h
+    dbmanager.h \
+    joinroomworker.h \
+    createroomworker.h \
+    templateworker.h \
+    leaveroomworker.h
 
 DISTFILES += \
     Protocol.txt \

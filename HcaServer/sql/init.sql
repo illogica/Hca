@@ -32,11 +32,12 @@ name VARCHAR(255),
 description text,
 motd text,
 worldid INTEGER REFERENCES worlds(id),
-ownerid INTEGER REFERENCES clients(id)
+ownerid INTEGER REFERENCES clients(id),
+avatar text
 );
 
-INSERT INTO rooms(id, name, description, worldid)
- VALUES(0, 'Lounge', 'The public Hca Lounge!', 0);
+INSERT INTO rooms(id, name, description, motd, worldid)
+ VALUES(0, 'Lounge', 'The public Hca Lounge!', 'Welcome and enjoy', 0);
 
 CREATE TABLE roomclients(
 id SERIAL PRIMARY KEY,

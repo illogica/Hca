@@ -1,24 +1,22 @@
-#ifndef LOGINWORKER_H
-#define LOGINWORKER_H
+#ifndef TEMPLATEWORKER_H
+#define TEMPLATEWORKER_H
 
 #include <QObject>
 #include <QWebSocket>
 #include "hcathread.h"
 #include "hcaworker.h"
-#include "client.h"
 
-class LoginWorker : public HcaWorker
+class TemplateWorker : public HcaWorker
 {
     Q_OBJECT
 public:
-    LoginWorker(){}
-    ~LoginWorker(){}
+    TemplateWorker(){}
+    ~TemplateWorker(){}
 
-    QString uuid;
     QWebSocket* socket;
 
 signals:
-    void loginResult(QByteArray, QWebSocket*, int);
+    void templateWorkerResult(QByteArray, QWebSocket*);
     void dbError(QString error);
 
 public slots:
@@ -26,6 +24,7 @@ public slots:
 
 private:
     QString m_id; //Thread id
+
 };
 
-#endif // LOGINWORKER_H
+#endif // TEMPLATEWORKER_H

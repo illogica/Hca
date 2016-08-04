@@ -12,6 +12,7 @@ QJsonObject Room::toJsonObject()
     o[ROOM_MOTD] = m_motd;
     o[ROOM_SIZE] = m_clients.size();
     o[ROOM_COUNT] = m_count;
+    o[ROOM_AVATAR] = m_avatar;
     return o;
 }
 
@@ -89,6 +90,16 @@ void Room::notifyChangeName(const QString &name)
     for(Client *c : m_clients){
         emit c->queueTextMessage(doc.toJson());
     }
+}
+
+QString Room::avatar() const
+{
+    return m_avatar;
+}
+
+void Room::setAvatar(const QString &avatar)
+{
+    m_avatar = avatar;
 }
 
 int Room::count() const

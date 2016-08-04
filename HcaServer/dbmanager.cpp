@@ -71,6 +71,7 @@ bool DbManager::findRoomById(int id, Room *r)
         r->setName(query.value(1).toString());
         r->setDescription(query.value(2).toString());
         r->setMotd(query.value(3).toString());
+        r->setAvatar(query.value(6).toString());
         r->setCount(countClients(r->id()));
 
         int worldId = query.value(4).toInt();
@@ -165,26 +166,30 @@ void DbManager::createUser(Client *c)
     }
 }
 
-void DbManager::createRoom(QString &name, QString &description, QString &motd, int worldId, int ownerId, Room *r)
+bool DbManager::createRoom(QString &name, QString &description, QString &motd, int worldId, int ownerId, QString &avatar, Room *r)
 {
     r->setName(name);
     r->setDescription(description);
     r->setMotd(motd);
     QSqlQuery insQuery(m_db);
-    insQuery.prepare("INSERT INTO rooms(name, description, motd, worldid, ownerid) VALUES (:name, :description, :motd, :worldid, :ownerid) RETURNING id");
+    insQuery.prepare("INSERT INTO rooms(name, description, motd, worldid, ownerid, avatar) VALUES (:name, :description, :motd, :worldid, :ownerid, :avatar) RETURNING id");
     insQuery.bindValue(":name", name);
     insQuery.bindValue(":description", description);
     insQuery.bindValue(":motd", motd);
     insQuery.bindValue(":worldid", worldId);
     insQuery.bindValue(":ownerid", ownerId);
+    insQuery.bindValue(":avatar", avatar);
     if(!insQuery.exec()){
         qWarning() << "Error in " << insQuery.lastQuery();
         qWarning() << "ERROR: " << insQuery.lastError().text();
+        return false;
     } else {
-        insQuery.next();
-        r->setId(insQuery.value(0).toInt());
-        qWarning() << "Room created";
-    }
+        if(insQuery.next()){
+            r->setId(insQuery.value(0).toInt());
+            qWarning() << "Room created";
+            return true;
+        }
+    } return false;
 }
 
 void DbManager::updateClientStatus(int id, int status)
@@ -248,7 +253,7 @@ void DbManager::listRoomsByWorld(int worldId, QList<Room *>& rooms)
         r->setName(query.value(1).toString());
         r->setDescription(query.value(2).toString());
         r->setMotd(query.value(3).toString());
-
+        r->setAvatar(query.value(6).toString());
         r->setCount(countClients(r->id()));
 
         QPointer<Client> c(new Client(r));
