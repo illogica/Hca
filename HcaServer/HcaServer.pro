@@ -1,4 +1,4 @@
-QT += core websockets sql
+QT += core websockets sql testlib
 QT -= gui
 
 CONFIG += c++11
@@ -6,6 +6,8 @@ CONFIG += c++11
 TARGET = HcaServer
 CONFIG += console
 CONFIG -= app_bundle
+
+INCLUDEPATH += workers
 
 TEMPLATE = app
 
@@ -18,15 +20,16 @@ SOURCES += main.cpp \
     world.cpp \
     hcathreadpool.cpp \
     hcathread.cpp \
-    loginworker.cpp \
-    disconnectworker.cpp \
-    listworldsworker.cpp \
-    listroomsworker.cpp \
     dbmanager.cpp \
-    joinroomworker.cpp \
-    createroomworker.cpp \
-    templateworker.cpp \
-    leaveroomworker.cpp
+    workers/disconnectworker.cpp \
+    workers/listworldsworker.cpp \
+    workers/listroomsworker.cpp \
+    workers/joinroomworker.cpp \
+    workers/createroomworker.cpp \
+    workers/leaveroomworker.cpp \
+    workers/loginworker.cpp \
+    workers/templateworker.cpp \
+    test/testserver.cpp
 
 HEADERS += \
     hcaserver.h \
@@ -39,16 +42,17 @@ HEADERS += \
     hcathreadpool.h \
     hcathread.h \
     pingrunnable.h \
-    loginworker.h \
     hcaworker.h \
-    disconnectworker.h \
-    listworldsworker.h \
-    listroomsworker.h \
     dbmanager.h \
-    joinroomworker.h \
-    createroomworker.h \
-    templateworker.h \
-    leaveroomworker.h
+    workers/disconnectworker.h \
+    workers/listworldsworker.h \
+    workers/listroomsworker.h \
+    workers/joinroomworker.h \
+    workers/createroomworker.h \
+    workers/leaveroomworker.h \
+    workers/loginworker.h \
+    workers/templateworker.h \
+    test/testserver.h
 
 DISTFILES += \
     Protocol.txt \

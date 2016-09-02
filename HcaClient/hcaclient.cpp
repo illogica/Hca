@@ -239,6 +239,45 @@ void HcaClient::sendGetWorldsList()
     }
 }
 
+void HcaClient::sendJoinRoom(int roomId)
+{
+    if(m_connected){
+        QJsonObject request;
+        request[REQUEST] = JOIN_ROOM;
+        request[ROOM_ID] = roomId;
+        QJsonDocument doc;
+        doc.setObject(request);
+        socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+    }
+}
+
+void HcaClient::sendCreateRoom(const QString &name, const QString &description, const QString &motd, const QString &avatar)
+{
+    if(m_connected){
+        QJsonObject request;
+        request[REQUEST] = CREATE_ROOM;
+        request[ROOM_NAME] = name;
+        request[DESCRIPTION] = description;
+        request[ROOM_MOTD] = motd;
+        request[ROOM_AVATAR] = avatar;
+        QJsonDocument doc;
+        doc.setObject(request);
+        socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+    }
+}
+
+void HcaClient::sendLeaveRoom(int roomId)
+{
+    if(m_connected){
+        QJsonObject request;
+        request[REQUEST] = LEAVE_ROOM;
+        request[ROOM_ID] = roomId;
+        QJsonDocument doc;
+        doc.setObject(request);
+        socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+    }
+}
+
 bool HcaClient::connected(){ return m_connected;}
 
 void HcaClient::setConnected(bool cntd)

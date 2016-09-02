@@ -35,6 +35,9 @@ public slots:
     void sendPing();
     void sendGetWorldsList();
     void sendGetRoomsList(int worldId);
+    void sendJoinRoom(int roomId);
+    void sendCreateRoom(const QString &name, const QString &description, const QString &motd, const QString &avatar);
+    void sendLeaveRoom(int roomId);
 
     //utils
     WorldData* findWorld(int worldId);

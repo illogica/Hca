@@ -68,7 +68,6 @@ void HcaServer::onTextMessage(QString msg)
     switch(r){
     case PING:
     {
-
         PingRunnable *pr = new PingRunnable();
         pr->socket = socket;
         connect(pr, &PingRunnable::pingResult, this, &HcaServer::onPingResult);
@@ -77,6 +76,9 @@ void HcaServer::onTextMessage(QString msg)
 
     case LOGIN:
     {
+        //PARAMS:
+        // uuid
+
         QPointer<LoginWorker> w = new LoginWorker();
         w->uuid = docObj[UUID].toString();
         w->socket = socket;
@@ -87,6 +89,8 @@ void HcaServer::onTextMessage(QString msg)
 
     case LIST_WORLDS:
     {
+        //PARAMS:
+        // -
         QPointer<ListWorldsWorker> w = new ListWorldsWorker();
         w->socket = socket;
         connect(w, &ListWorldsWorker::listWorldsResult, this, &HcaServer::onListWorldsResult);
@@ -96,6 +100,8 @@ void HcaServer::onTextMessage(QString msg)
 
     case LIST_ROOMS:
     {
+        //PARAMS:
+        // world id
         qint32 worldId = docObj[WORLD_ID].toInt();
         QPointer<ListRoomsWorker> w(new ListRoomsWorker());
         w->socket = socket;
@@ -107,7 +113,8 @@ void HcaServer::onTextMessage(QString msg)
 
     case JOIN_ROOM:
     {
-
+        //PARAMS:
+        // room id
         int roomId = docObj[ROOM_ID].toInt();
 
         if(!clientsBySocket.contains(socket)){
@@ -127,6 +134,13 @@ void HcaServer::onTextMessage(QString msg)
 
     case CREATE_ROOM:
     {
+        //PARAMS:
+        // world id
+        // room name
+        // room description
+        // room motd
+        // room avatar
+
         int worldId = docObj[WORLD_ID].toInt();
         QString roomName = docObj[ROOM_NAME].toString();
         QString description = docObj[DESCRIPTION].toString();
@@ -154,6 +168,8 @@ void HcaServer::onTextMessage(QString msg)
 
     case LEAVE_ROOM:
     {
+        //PARAMS:
+        // room id
         int roomId = docObj[ROOM_ID].toInt();
 
         if(!clientsBySocket.contains(socket)){
