@@ -1,1 +1,3 @@
 WorldsList 1.0 WorldsList.qml
+RoomsListDelegate 1.0 RoomsListDelegate.qml
+WorldsListDelegate 1.0 WorldsListDelegate.qml

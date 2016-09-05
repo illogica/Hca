@@ -4,17 +4,30 @@
 
 HcaClient::HcaClient(QObject *parent, QQmlContext *context) : QObject(parent)
 {
+    m_active = false;
+    m_connected = false;
+    m_getWorldsListPending = false;
+    m_getRoomsListPending = false;
+    m_loginPending = false;
+
     this->ctx = context;
     connect(&socket, &QWebSocket::connected, this, &HcaClient::onConnected);
     connect(&socket, &QWebSocket::disconnected, this, &HcaClient::onDisconnected);
     connect(&socket, &QWebSocket::textMessageReceived, this, &HcaClient::parseServerMessage);
 
     ctx->setContextProperty("wlModel", QVariant::fromValue(m_worldsModel));
+    connectionTimer = new QTimer(this);
+    connect(connectionTimer, &QTimer::timeout, this, &HcaClient::establish);
 }
 
 void HcaClient::establish(){
-    socket.open(QUrl(QStringLiteral("ws://localhost:8081")));
-}
+    if(!m_connected){
+        qWarning() << "trying to connect";
+        socket.open(QUrl(QStringLiteral("ws://localhost:8081")));
+    } else {
+        qWarning() << "Called establish for nothing!";
+    }
+ }
 
 void HcaClient::onConnected()
 {
@@ -30,6 +43,9 @@ void HcaClient::onDisconnected()
     qWarning() << "onDisconnected()";
     m_connected = false;
     emit connectedChanged(false);
+    if(m_active){
+        QTimer::singleShot(RETRY_MS, this, SLOT(establish()));
+    }
 }
 
 void HcaClient::parseServerMessage(const QString &message)
@@ -64,6 +80,7 @@ void HcaClient::parseServerMessage(const QString &message)
         settings.setValue(UUID, uuid);
         settings.setValue(NAME, docObj[NAME].toString());
         qWarning() << "new Uuid: " << uuid.toString();
+        m_loginPending = false;
         sendGetWorldsList();
     } break;
 
@@ -75,45 +92,26 @@ void HcaClient::parseServerMessage(const QString &message)
 
     case LIST_WORLDS:
     {
+        m_getWorldsListPending = false;
+        emit qmlWorldsListReset();
         QJsonArray worlds = docObj[WORLDS].toArray();
 
-        //update the worlds we already have
         QJsonArray::iterator it;
         for(it = worlds.begin(); it!=worlds.end(); it++){
             QJsonObject obj = (*it).toObject();
-            WorldData *w = findWorld(obj[WORLD_ID].toInt());
-            if(!w){ w = new WorldData(this); m_worlds.append(w);}
-            w->setId(obj[WORLD_ID].toInt());
-            w->setName(obj[WORLD_NAME].toString());
-            w->setDescription(obj[DESCRIPTION].toString());
-            w->setSize(obj[WORLD_SIZE].toInt());
+            qmlWorldsListAdd(
+                        obj[WORLD_ID].toInt(),
+                        obj[WORLD_NAME].toString(),
+                        obj[DESCRIPTION].toString(),
+                        obj[WORLD_SIZE].toInt());
         }
-
-        //delete worlds that don't exist anymore
-        for(WorldData *w : m_worlds){
-            bool found = false;
-            for(it = worlds.begin(); it!=worlds.end(); it++){
-                QJsonObject obj = (*it).toObject();
-                if(obj[WORLD_ID].toInt() == w->id()){
-                    found = true;
-                    break;
-                }
-            }
-            if(!found) delete w;
-        }
-
-        //Share the data with the QML side
-        qDeleteAll(m_worldsModel.begin(), m_worldsModel.end());
-        for(WorldData *w : m_worlds){
-            m_worldsModel.append(new WorldData(w->id(), w->name(), w->description(), w->size()));
-        }
-        ctx->setContextProperty("wlModel", QVariant::fromValue(m_worldsModel));
 
         qWarning() << "Updated worlds lists";
     } break;
 
     case LIST_ROOMS:
     {
+        m_getRoomsListPending = false;
         qint32 worldId = docObj[WORLD_ID].toInt();
         WorldData *w = findWorld(worldId);
         if(!w) return;
@@ -186,13 +184,14 @@ void HcaClient::leaveRoom(int roomId)
 
 void HcaClient::sendLogin()
 {
-    if(m_connected){
+    if(m_connected && !m_loginPending){
         QJsonObject response;
         response[REQUEST] = LOGIN;
         response[UUID] = settings.value(UUID, "").toUuid().toString();
         QJsonDocument doc;
         doc.setObject(response);
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+        m_loginPending = true;
     }
 }
 
@@ -209,13 +208,14 @@ void HcaClient::sendPing()
 
 void HcaClient::sendGetRoomsList(qint32 worldId)
 {
-    if(m_connected){
+    if(m_connected && !m_getRoomsListPending){
         QJsonObject request;
         request[REQUEST] = LIST_ROOMS;
         request[WORLD_ID] = worldId;
         QJsonDocument doc;
         doc.setObject(request);
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+        m_getRoomsListPending = true;
     }
 }
 
@@ -230,12 +230,13 @@ WorldData *HcaClient::findWorld(int worldId)
 
 void HcaClient::sendGetWorldsList()
 {
-    if(m_connected){
+    if(m_connected && !m_getWorldsListPending){
         QJsonObject request;
         request[REQUEST] = LIST_WORLDS;
         QJsonDocument doc;
         doc.setObject(request);
         socket.sendTextMessage(doc.toJson(QJsonDocument::Compact));
+        m_getWorldsListPending = true;
     }
 }
 
@@ -280,14 +281,20 @@ void HcaClient::sendLeaveRoom(int roomId)
 
 bool HcaClient::connected(){ return m_connected;}
 
-void HcaClient::setConnected(bool cntd)
+bool HcaClient::active()
 {
-    if(cntd && !m_connected){
-        establish();
-        return;
-    }
-    if(!cntd && m_connected){
-        socket.close();
+    return m_active;
+}
+
+void HcaClient::setActive(bool active)
+{
+    if(m_active != active){
+        m_active = active;
+        emit activeChanged(active);
+
+        if(active){
+            establish();
+        }
     }
 }
 

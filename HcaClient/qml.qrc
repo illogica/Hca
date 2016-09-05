@@ -3,5 +3,7 @@
         <file>main.qml</file>
         <file>components/WorldsList.qml</file>
         <file>components/NewRoomForm.qml</file>
+        <file>components/RoomsListDelegate.qml</file>
+        <file>components/WorldsListDelegate.qml</file>
     </qresource>
 </RCC>

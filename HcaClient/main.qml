@@ -15,6 +15,52 @@ ApplicationWindow{
 
     property string currentWorld: ""
 
+    ListModel{
+        id: worldsModel
+        function addWorld(id, name, description, size){
+            console.warn("Appending world " + name)
+            worldsModel.append({
+                                  "worldId": id,
+                                  "worldName": name,
+                                  "worldDescription": description,
+                                  "worldSize": size
+                              })
+        }
+
+        function reset(){
+            clear();
+            console.warn("Cleared worlds list");
+        }
+    }
+
+    ListModel{
+        id: roomsModel
+        function addRoom(id, name, description, motd, size, count, avatar){
+            roomsModel.append({
+                                  "roomId": id,
+                                  "roomName": name,
+                                  "roomDescription": description,
+                                  "roomMotd": motd,
+                                  "roomSize": size,
+                                  "roomCount": count,
+                                  "roomAvatar": avatar
+                              })
+        }
+
+        function reset(){
+            clear();
+            console.warn("Cleared worlds list");
+        }
+    }
+
+    Connections{
+        target: HcaClient
+        onQmlWorldsListAdd: worldsModel.addWorld(id, name, description, size)
+        onQmlWorldsListReset: worldsModel.reset()
+        onQmlRoomsListAdd: roomsModel.addRoom(id, name, description, motd, size, count, avatar)
+        onQmlRoomsListReset: roomsModel.reset()
+    }
+
     menuBar: MenuBar {
         Menu {
             title: "File"
@@ -41,7 +87,6 @@ ApplicationWindow{
                 text: "Leave..."
                 onTriggered: dialogRoomLeave.visible = true
             }
-
         }
     }
 
@@ -61,7 +106,7 @@ ApplicationWindow{
                 checked: false
                 Layout.alignment: Qt.AlignRight
                 onCheckedChanged: {
-                    checked ? HcaClient.connected=true : HcaClient.connected=false
+                    checked ? HcaClient.active=true : HcaClient.active=false
                 }
             }
         }
@@ -75,33 +120,48 @@ ApplicationWindow{
         }
     }
 
-    StackView {
-        id: stackView
-        anchors.fill: contentItem
-        initialItem: Item {
-            id: mainView
-            anchors.fill: parent
-            anchors.centerIn: parent
-
-            /*ColumnLayout{
-                anchors.centerIn: parent
-                anchors.fill: parent
-                spacing: 10
-                /*Button{
-                    text: "Contacts"
-                    onClicked: console.warn("contacts pushed")
-                }
-                Button{
-                    text: "Rooms"
-                    onClicked: stackView.push(roomsView)
-                }*/
-
-            WorldsList{
-                id: worldsList
-                model: wlModel
+    TabView {
+        id: tabView
+        anchors.fill: parent //contentItem
+        onCurrentIndexChanged:{
+            switch(currentIndex){
+            case 0:
+                console.warn("Selected worls tab");
+                break;
+            case 1:
+                console.warn("Selected rooms tab");
+                break;
+            case 2:
+                console.warn("Selected friends tab");
+                break;
+            case 3:
+                console.warn("Selected profile tab");
+                break;
+            default:
+                break;
             }
         }
 
+        tabPosition: Qt.TopEdge
+
+        Tab{  //currentIndex 0
+            title: "Worlds"
+            ListView{
+                id: worldsListView
+                model: worldsModel
+                delegate: WorldsListDelegate{}
+                anchors.fill: parent
+            }
+        }
+        Tab{  //currentIndex 1
+            title: "Rooms"
+        }
+        Tab{  //currentIndex 2
+            title: "Friends"
+        }
+        Tab{  //currentIndex 3
+            title: "Profile"
+        }
     }
 
     /*Item{
@@ -159,7 +219,7 @@ ApplicationWindow{
                 }
             }
 
-            ListView {
+            /*ListView {
                 id: listRooms
                 width: parent.width
                 model: roomsModel
@@ -180,7 +240,7 @@ ApplicationWindow{
                         }
                     }
                 }
-            }
+            }*/
         }
     }
 
