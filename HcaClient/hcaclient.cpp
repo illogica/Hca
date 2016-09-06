@@ -9,6 +9,7 @@ HcaClient::HcaClient(QObject *parent, QQmlContext *context) : QObject(parent)
     m_getWorldsListPending = false;
     m_getRoomsListPending = false;
     m_loginPending = false;
+    m_defaultWorldId = 0;  //Default world is 0, "The great HCA world"
 
     this->ctx = context;
     connect(&socket, &QWebSocket::connected, this, &HcaClient::onConnected);
@@ -113,29 +114,27 @@ void HcaClient::parseServerMessage(const QString &message)
     {
         m_getRoomsListPending = false;
         qint32 worldId = docObj[WORLD_ID].toInt();
-        WorldData *w = findWorld(worldId);
-        if(!w) return;
+        //WorldData *w = findWorld(worldId);
+        //if(!w) return;
 
         QJsonArray rooms = docObj[ROOMS].toArray();
         if(rooms.isEmpty()) return;
 
         //we have enough data, let's start:
-        w->resetRooms();
+        //w->resetRooms();
 
         QJsonArray::iterator it;
         for(it = rooms.begin(); it!=rooms.end(); it++){
             QJsonObject obj = (*it).toObject();
-            RoomData *r = new RoomData(this);
-            r->setName(obj[ROOM_NAME].toString());
-            r->setDescription(obj[DESCRIPTION].toString());
-            r->setSize(obj[ROOM_SIZE].toInt());
-            w->addRoom(r);
+            qmlRoomsListAdd(
+                        obj[ROOM_ID].toInt(),
+                        obj[ROOM_NAME].toString(),
+                        obj[DESCRIPTION].toString(),
+                        obj[ROOM_MOTD].toString(),
+                        obj[ROOM_SIZE].toInt(),
+                        obj[ROOM_AVATAR].toString()
+                        );
         }
-
-        //Share the data with the QML side
-        ctx->setContextProperty("roomsModel", QVariant::fromValue(w->roomsModel()));
-
-        qWarning() << "Updated rooms list for " << w->name();
     } break;
 
     default:
@@ -305,4 +304,17 @@ QJsonDocument HcaClient::makePing()
     QJsonDocument doc;
     doc.setObject(response);
     return doc;
+}
+
+int HcaClient::defaultWorldId() const
+{
+    return m_defaultWorldId;
+}
+
+void HcaClient::setDefaultWorldId(int defaultWorldId)
+{
+    if(m_defaultWorldId != defaultWorldId){
+        m_defaultWorldId = defaultWorldId;
+        emit defaultWorldIdChanged(m_defaultWorldId);
+    }
 }

@@ -16,7 +16,7 @@ Rectangle{
             height: root.height
             width: height
             fillMode: Image.PreserveAspectFit
-            source: "qrc:/emojione/" + roomAvatar
+            source: "qrc:/emojione/" + roomAvatar + ".svg"
             sourceSize.width: imageAvatar.width
             sourceSize.height: imageAvatar.height
             mipmap: true

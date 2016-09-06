@@ -4,6 +4,8 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
 
+import Local 1.0
+
 import "components" 1.0
 
 ApplicationWindow{
@@ -33,7 +35,7 @@ ApplicationWindow{
         }
     }
 
-    ListModel{
+    /*ListModel{
         id: roomsModel
         function addRoom(id, name, description, motd, size, count, avatar){
             roomsModel.append({
@@ -51,14 +53,18 @@ ApplicationWindow{
             clear();
             console.warn("Cleared worlds list");
         }
+    }*/
+
+    RoomDataModel{
+        id: roomDataModel
     }
 
     Connections{
         target: HcaClient
         onQmlWorldsListAdd: worldsModel.addWorld(id, name, description, size)
         onQmlWorldsListReset: worldsModel.reset()
-        onQmlRoomsListAdd: roomsModel.addRoom(id, name, description, motd, size, count, avatar)
-        onQmlRoomsListReset: roomsModel.reset()
+        onQmlRoomsListAdd: roomDataModel.addRoom(id, name, description, motd, size, avatar)
+        onQmlRoomsListReset: roomDataModel.reset()
     }
 
     menuBar: MenuBar {
@@ -130,6 +136,9 @@ ApplicationWindow{
                 break;
             case 1:
                 console.warn("Selected rooms tab");
+                if(roomDataModel.rowCount() == 0){
+                    HcaClient.sendGetRoomsList(HcaClient.defaultWorldId)
+                }
                 break;
             case 2:
                 console.warn("Selected friends tab");
@@ -155,6 +164,12 @@ ApplicationWindow{
         }
         Tab{  //currentIndex 1
             title: "Rooms"
+            ListView{
+                id: roomsListView
+                model: roomDataModel
+                delegate: RoomsListDelegate{}
+                anchors.fill: parent
+            }
         }
         Tab{  //currentIndex 2
             title: "Friends"

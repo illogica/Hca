@@ -6,7 +6,8 @@ CONFIG += c++11
 SOURCES += main.cpp \
     hcaclient.cpp \
     roomdata.cpp \
-    worlddata.cpp
+    worlddata.cpp \
+    roomdatamodel.cpp
 
 RESOURCES += qml.qrc \
     emojione.qrc
@@ -20,7 +21,8 @@ include(deployment.pri)
 HEADERS += \
     hcaclient.h \
     roomdata.h \
-    worlddata.h
+    worlddata.h \
+    roomdatamodel.h
 
 DISTFILES += \
     components/qmldir

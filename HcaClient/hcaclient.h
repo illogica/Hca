@@ -19,16 +19,20 @@ class HcaClient : public QObject
     Q_OBJECT
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
+    Q_PROPERTY(int defaultWorldId READ defaultWorldId WRITE setDefaultWorldId NOTIFY defaultWorldIdChanged)
 public:
     explicit HcaClient(QObject *parent = 0, QQmlContext *context = 0);
+
+
 
 signals:
     void connectedChanged(bool connected);
     void activeChanged(bool active);
+    void defaultWorldIdChanged(int worldId);
 
     void qmlWorldsListAdd(int id, const QString &name, const QString &description, int size);
     void qmlWorldsListReset();
-    void qmlRoomsListAdd(int id, const QString &name, const QString &description, const QString &motd, int size, int count, const QString &avatar);
+    void qmlRoomsListAdd(int id, const QString &name, const QString &description, const QString &motd, int size, const QString &avatar);
     void qmlRoomsListReset();
 
 public slots:
@@ -56,6 +60,8 @@ public slots:
     bool connected();
     bool active();
     void setActive(bool active);
+    int defaultWorldId() const;
+    void setDefaultWorldId(int defaultWorldId);
 
 private:
     QJsonDocument makePing();
@@ -70,6 +76,7 @@ private:
     bool m_connected;
     bool m_active;
     QQmlContext *ctx;
+    int m_defaultWorldId;
 
     WorldData *currentWorld;
     QList<WorldData *> m_worlds;

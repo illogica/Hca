@@ -14,7 +14,7 @@ void RoomData::setName(const QString &name)
 {
     if(m_name!=name){
         m_name = name;
-        emit nameChanged();
+        emit nameChanged(m_name);
     }
 }
 
@@ -22,7 +22,7 @@ void RoomData::setDescription(const QString &description)
 {
     if(m_description != description){
         m_description = description;
-        emit descriptionChanged();
+        emit descriptionChanged(m_description);
     }
 }
 
@@ -30,7 +30,7 @@ void RoomData::setSize(int size)
 {
     if(m_size != size){
         m_size = size;
-        emit sizeChanged();
+        emit sizeChanged(m_size);
     }
 }
 
@@ -43,21 +43,48 @@ void RoomData::setId(int id)
 {
     if(m_id != id){
         m_id = id;
-        emit idChanged();
+        emit idChanged(m_id);
     }
 }
 
-QString RoomData::name()
+QString RoomData::avatar() const
+{
+    return m_avatar;
+}
+
+void RoomData::setAvatar(const QString &avatar)
+{
+    if(m_avatar != avatar){
+        m_avatar = avatar;
+        emit avatarChanged(m_avatar);
+    }
+}
+
+QString RoomData::motd() const
+{
+    return m_motd;
+}
+
+void RoomData::setMotd(const QString &motd)
+{
+    if(m_motd != motd){
+        m_motd = motd;
+        emit motdChanged(m_motd);
+    }
+
+}
+
+QString RoomData::name() const
 {
     return m_name;
 }
 
-QString RoomData::description()
+QString RoomData::description() const
 {
     return m_description;
 }
 
-int RoomData::size()
+int RoomData::size() const
 {
     return m_size;
 }

@@ -36,8 +36,8 @@ ownerid INTEGER REFERENCES clients(id),
 avatar text
 );
 
-INSERT INTO rooms(id, name, description, motd, worldid)
- VALUES(0, 'Lounge', 'The public Hca Lounge!', 'Welcome and enjoy', 0);
+INSERT INTO rooms(id, name, description, motd, worldid, avatar)
+ VALUES(0, 'Lounge', 'The public Hca Lounge!', 'Welcome and enjoy', 0, '1f3db');
 
 CREATE TABLE roomclients(
 id SERIAL PRIMARY KEY,
