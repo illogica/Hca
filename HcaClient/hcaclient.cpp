@@ -87,8 +87,22 @@ void HcaClient::parseServerMessage(const QString &message)
 
     case JOIN_ROOM:
     {
-        QString name = docObj[NAME].toString();
-        qWarning() << "Joined room: " << name;
+        int result = docObj[RESULT].toInt();
+        if(result == DENIED){
+            qWarning() << "Join room failed";
+            return;
+        }
+        else {
+            qmlShowChatRoom(
+                        docObj[ROOM_ID].toInt(),
+                        docObj[ROOM_NAME].toString(),
+                        docObj[DESCRIPTION].toString(),
+                        docObj[ROOM_MOTD].toString(),
+                        docObj[ROOM_COUNT].toInt(),
+                        docObj[ROOM_AVATAR].toString()
+                        );
+            qWarning() << "Room joined";
+        }
     } break;
 
     case LIST_WORLDS:
@@ -113,9 +127,6 @@ void HcaClient::parseServerMessage(const QString &message)
     case LIST_ROOMS:
     {
         m_getRoomsListPending = false;
-        qint32 worldId = docObj[WORLD_ID].toInt();
-        //WorldData *w = findWorld(worldId);
-        //if(!w) return;
 
         QJsonArray rooms = docObj[ROOMS].toArray();
         if(rooms.isEmpty()) return;
@@ -131,7 +142,7 @@ void HcaClient::parseServerMessage(const QString &message)
                         obj[ROOM_NAME].toString(),
                         obj[DESCRIPTION].toString(),
                         obj[ROOM_MOTD].toString(),
-                        obj[ROOM_SIZE].toInt(),
+                        obj[ROOM_COUNT].toInt(),
                         obj[ROOM_AVATAR].toString()
                         );
         }

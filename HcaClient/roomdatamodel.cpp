@@ -72,7 +72,9 @@ void RoomDataModel::addRoom(int id, const QString &name, const QString &descript
 
 void RoomDataModel::reset()
 {
+    beginResetModel();
     while (!roomsList.isEmpty()) {
         roomsList.takeFirst()->deleteLater();
     }
+    endResetModel();
 }

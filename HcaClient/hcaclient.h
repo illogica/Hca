@@ -23,8 +23,6 @@ class HcaClient : public QObject
 public:
     explicit HcaClient(QObject *parent = 0, QQmlContext *context = 0);
 
-
-
 signals:
     void connectedChanged(bool connected);
     void activeChanged(bool active);
@@ -34,6 +32,7 @@ signals:
     void qmlWorldsListReset();
     void qmlRoomsListAdd(int id, const QString &name, const QString &description, const QString &motd, int size, const QString &avatar);
     void qmlRoomsListReset();
+    void qmlShowChatRoom(int roomId, const QString &roomName, const QString &description, const QString &motd, int size, const QString &avatar);
 
 public slots:
     void onConnected();

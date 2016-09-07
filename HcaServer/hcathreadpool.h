@@ -28,7 +28,7 @@ private:
     void applyWorkerToThread(QString t_id, HcaWorker* w);
     void launchNewThread();
 
-    int m_StartThreads = 0;
+    int m_startThreads = 0;
     QList<HcaWorker *> m_workersQueue;
     QHash<QString, HcaThread*> m_threads;
     QHash<QString, bool> m_threadsStatus;

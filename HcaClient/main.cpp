@@ -3,12 +3,14 @@
 #include <QQmlContext>
 #include "hcaclient.h"
 #include "roomdatamodel.h"
+#include "chatsdatamodel.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<RoomDataModel>("Local", 1, 0, "RoomDataModel");
+    qmlRegisterType<ChatsDataModel>("Local", 1, 0, "ChatsDataModel");
 
     QCoreApplication::setOrganizationName("Illogica");
     QCoreApplication::setOrganizationDomain("Illogicasoftware.com");
@@ -19,8 +21,9 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("HcaClient", client);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
+    //Compiles a list of emojys
     QStringList emojyList;
-    //compilare la lista delle emojy
+#include "emojys.h"
     engine.rootContext()->setContextProperty("emojyList", QVariant::fromValue(emojyList));
 
     return app.exec();

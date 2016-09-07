@@ -109,10 +109,27 @@ bool DbManager::findWorldById(int id, World *w)
     } return false;
 }
 
+bool DbManager::isClientInRoom(int clientId, int roomId)
+{
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM roomclients WHERE roomid = :roomId AND clientid = :clientId");
+    query.bindValue(":roomId", roomId);
+    query.bindValue(":clientId", clientId);
+    if(!query.exec()){
+        qWarning() << "Error in " << query.lastQuery();
+        qWarning() << "ERROR: " << query.lastError().text();
+        return false;
+    }
+    if(query.next()){
+        qWarning() << "User already in room.";
+        return true;
+    } return false;
+}
+
 bool DbManager::addClientToRoom(int clientId, int roomId)
 {
     QSqlQuery insQuery(m_db);
-    insQuery.prepare("INSERT INTO roomclients(roomid, clientid) VALUES (:roomid, :clientid)");
+    insQuery.prepare("INSERT INTO roomclients(roomid, clientid, lastseen) VALUES (:roomid, :clientid, now())");
     insQuery.bindValue(":roomid", roomId);
     insQuery.bindValue(":clientid", clientId);
     if(!insQuery.exec()){
@@ -122,6 +139,17 @@ bool DbManager::addClientToRoom(int clientId, int roomId)
         qWarning() << "User created";
         return true;
     }
+}
+
+void DbManager::updateClientRoomLastSeen(int clientId, int roomId)
+{
+    QSqlQuery updQuery(m_db);
+    updQuery.prepare("UPDATE roomclients SET lastseen = now() WHERE roomid = :roomId AND clientid = :clientId");
+    updQuery.bindValue(":roomId", roomId);
+    updQuery.bindValue(":clientId", clientId);
+    if(!updQuery.exec()){
+        qWarning() << "ERROR: " << updQuery.lastError().text();
+    } //user found and updated
 }
 
 bool DbManager::removeClientFromRoom(int clientId, int roomId)
@@ -264,6 +292,11 @@ void DbManager::listRoomsByWorld(int worldId, QList<Room *>& rooms)
 
         rooms.append(r.data());
     }
+}
+
+void DbManager::listRoomsByUser(int userId, QList<Room *> &rooms)
+{
+
 }
 
 int DbManager::countRooms(int worldId)

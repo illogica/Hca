@@ -11,6 +11,8 @@ Rectangle{
     width: 360
     color: Qt.rgba(Math.random(),Math.random(),Math.random(),0.1)
 
+    signal selected(var id)
+
     Column{
         Row{
             Label{
@@ -26,6 +28,12 @@ Rectangle{
         Label{
             text: worldDescription
         }
+    }
+
+    MouseArea{
+        id: clickArea
+        anchors.fill: parent
+        onClicked: selected(worldId)
     }
 }
 

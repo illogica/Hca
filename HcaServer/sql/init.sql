@@ -1,5 +1,7 @@
 ﻿-- execute this query as user "hca"
 
+SET TIME ZONE 'UTC';
+
 DROP TABLE IF EXISTS roomclients;
 DROP TABLE IF EXISTS rooms;
 DROP TABLE IF EXISTS worlds;
@@ -42,5 +44,8 @@ INSERT INTO rooms(id, name, description, motd, worldid, avatar)
 CREATE TABLE roomclients(
 id SERIAL PRIMARY KEY,
 roomid INTEGER REFERENCES rooms(id),
-clientid INTEGER REFERENCES clients(id)
+clientid INTEGER REFERENCES clients(id),
+lastseen TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
+CREATE UNIQUE INDEX rooms_clients_unique ON roomclients (roomId, clientId);
+

@@ -22,11 +22,11 @@ ApplicationWindow{
         function addWorld(id, name, description, size){
             console.warn("Appending world " + name)
             worldsModel.append({
-                                  "worldId": id,
-                                  "worldName": name,
-                                  "worldDescription": description,
-                                  "worldSize": size
-                              })
+                                   "worldId": id,
+                                   "worldName": name,
+                                   "worldDescription": description,
+                                   "worldSize": size
+                               })
         }
 
         function reset(){
@@ -34,26 +34,6 @@ ApplicationWindow{
             console.warn("Cleared worlds list");
         }
     }
-
-    /*ListModel{
-        id: roomsModel
-        function addRoom(id, name, description, motd, size, count, avatar){
-            roomsModel.append({
-                                  "roomId": id,
-                                  "roomName": name,
-                                  "roomDescription": description,
-                                  "roomMotd": motd,
-                                  "roomSize": size,
-                                  "roomCount": count,
-                                  "roomAvatar": avatar
-                              })
-        }
-
-        function reset(){
-            clear();
-            console.warn("Cleared worlds list");
-        }
-    }*/
 
     RoomDataModel{
         id: roomDataModel
@@ -65,6 +45,7 @@ ApplicationWindow{
         onQmlWorldsListReset: worldsModel.reset()
         onQmlRoomsListAdd: roomDataModel.addRoom(id, name, description, motd, size, avatar)
         onQmlRoomsListReset: roomDataModel.reset()
+        onQmlShowChatRoom: console.warn("Will show the chat room");
     }
 
     menuBar: MenuBar {
@@ -136,14 +117,17 @@ ApplicationWindow{
                 break;
             case 1:
                 console.warn("Selected rooms tab");
-                if(roomDataModel.rowCount() == 0){
+                if(roomDataModel.rowCount() === 0){
                     HcaClient.sendGetRoomsList(HcaClient.defaultWorldId)
                 }
                 break;
             case 2:
-                console.warn("Selected friends tab");
+                console.warn("Selected chats tab");
                 break;
             case 3:
+                console.warn("Selected friends tab");
+                break;
+            case 4:
                 console.warn("Selected profile tab");
                 break;
             default:
@@ -158,8 +142,39 @@ ApplicationWindow{
             ListView{
                 id: worldsListView
                 model: worldsModel
-                delegate: WorldsListDelegate{}
                 anchors.fill: parent
+                delegate: Rectangle{
+                    id: worldListDelegate
+                    border.color: "grey"
+                    border.width: 2
+                    radius: 5
+                    antialiasing: true
+                    height: 40
+                    width: 360
+                    color: Qt.rgba(Math.random(),Math.random(),Math.random(),0.1)
+
+                    Column{
+                        Row{
+                            Label{
+                                text: 'Name: <b>' +worldName + "</b>, "
+                            }
+                            Label{
+                                text: worldSize + " rooms"
+                            }
+                        }
+                        Label{
+                            text: worldDescription
+                        }
+                    }
+                    MouseArea{
+                        id: worldsDelegateClickArea
+                        anchors.fill: parent
+                        onClicked: {
+                            HcaClient.defaultWorldId = worldId
+                            tabView.currentIndex = 1
+                        }
+                    }
+                }
             }
         }
         Tab{  //currentIndex 1
@@ -167,14 +182,66 @@ ApplicationWindow{
             ListView{
                 id: roomsListView
                 model: roomDataModel
-                delegate: RoomsListDelegate{}
                 anchors.fill: parent
+                delegate: Rectangle{
+                    id: roomListDelegate
+                    border.color: "brown"
+                    border.width: 2
+                    radius: 2
+                    antialiasing: true
+                    height: 40
+                    width: 360
+                    color: Qt.rgba(Math.random(),Math.random(),Math.random(),0.1)
+                    Row{
+                        Image {
+                            id: imageAvatar
+                            height: roomListDelegate.height
+                            width: height
+                            fillMode: Image.PreserveAspectFit
+                            source: "qrc:/emojione/" + roomAvatar + ".svg"
+                            sourceSize.width: imageAvatar.width
+                            sourceSize.height: imageAvatar.height
+                            mipmap: true
+                            smooth: true
+                        }
+
+                        Column{
+
+                            Row{
+                                Label{
+                                    //anchors.left: parent.left
+                                    text: 'Name: <b>' +roomName + "</b>, "
+                                }
+                                Label{
+                                    //anchors.right: parent.right
+                                    text: roomSize + " clients"
+                                }
+                            }
+
+                            Label{
+                                text: roomDescription
+                            }
+                        }
+                    }
+                    MouseArea{
+                        id: chatsDelegateClickArea
+                        anchors.fill: parent
+                        onClicked: {
+                            HcaClient.sendJoinRoom(roomId)
+                            tabView.currentIndex = 2
+                        }
+                    }
+                }
+
             }
         }
         Tab{  //currentIndex 2
-            title: "Friends"
+            title: "Chats"
         }
         Tab{  //currentIndex 3
+            title: "Friends"
+        }
+        Tab{  //currentIndex 4
             title: "Profile"
         }
     }

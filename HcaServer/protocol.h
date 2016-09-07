@@ -49,6 +49,7 @@ enum Request{
     LEAVE_ROOM,
     NOTIFY_LEAVE_ROOM,
     LIST_ROOMS,
+    LIST_OWN_ROOMS,
     LIST_WORLDS,
     JOIN_WORLD,
     SEND_ROOM,

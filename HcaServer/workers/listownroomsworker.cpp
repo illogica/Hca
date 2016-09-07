@@ -1,9 +1,6 @@
-#include "listroomsworker.h"
-#include "protocol.h"
+#include "listownroomsworker.h"
 
-ListRoomsWorker::ListRoomsWorker(){}
-
-void ListRoomsWorker::doWork(HcaThread *t)
+ListOwnRoomsWorker::doWork(HcaThread *t)
 {
     m_id = t->id();
     DbManager* dbm = t->dbManager();
@@ -17,13 +14,15 @@ void ListRoomsWorker::doWork(HcaThread *t)
     }
 
     QJsonObject response;
-    response[REQUEST] = LIST_ROOMS;
+    response[REQUEST] = LIST_OWN_ROOMS;
     response[ROOMS] = roomsArray;
     QJsonDocument doc;
     doc.setObject(response);
 
     while(!rooms.isEmpty()) delete rooms.takeFirst();
 
-    emit listRoomsResult(doc.toJson(QJsonDocument::Compact), socket);
+    emit listOwnRoomsWorkerResult(doc.toJson(QJsonDocument::Compact), socket);
     emit(t->setThreadStatus(m_id, true)); //this must always be the last
+
+    //TODO: CREATE THE SQL QUERY FOR THIS!!!
 }

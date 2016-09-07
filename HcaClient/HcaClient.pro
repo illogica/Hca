@@ -7,7 +7,8 @@ SOURCES += main.cpp \
     hcaclient.cpp \
     roomdata.cpp \
     worlddata.cpp \
-    roomdatamodel.cpp
+    roomdatamodel.cpp \
+    chatsdatamodel.cpp
 
 RESOURCES += qml.qrc \
     emojione.qrc
@@ -22,7 +23,10 @@ HEADERS += \
     hcaclient.h \
     roomdata.h \
     worlddata.h \
-    roomdatamodel.h
+    roomdatamodel.h \
+    emojys.h \
+    chatsdatamodel.h
 
 DISTFILES += \
-    components/qmldir
+    components/qmldir \
+    emojione/listToC.nim

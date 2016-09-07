@@ -125,6 +125,7 @@ void HcaServer::onTextMessage(QString msg)
         int clientId = clientsBySocket.value(socket);
 
         QPointer<JoinRoomWorker> w = new JoinRoomWorker ();
+        w->socket = socket;
         w->roomId = roomId;
         w->clientId = clientId;
         connect(w, &JoinRoomWorker::joinRoomResult, this, &HcaServer::onJoinRoomResult);

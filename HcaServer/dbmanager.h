@@ -19,7 +19,9 @@ public:
     bool findRoomById(int id, Room* r);
     bool findWorldById(int id, World* w);
 
+    bool isClientInRoom(int clientId, int roomId);
     bool addClientToRoom(int clientId, int roomId);
+    void updateClientRoomLastSeen(int clientId, int roomId);
     bool removeClientFromRoom(int clientId, int roomId);
 
     void createUser(Client* c);
@@ -29,6 +31,7 @@ public:
 
     void listWorlds(QList<World*>& worlds);
     void listRoomsByWorld(int worldId, QList<Room *>& rooms);
+    void listRoomsByUser(int userId, QList<Room *>& rooms);
     int countRooms(int worldId);
     int countClients(int roomId);
 

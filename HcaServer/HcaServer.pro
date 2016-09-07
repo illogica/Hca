@@ -29,7 +29,8 @@ SOURCES += main.cpp \
     workers/leaveroomworker.cpp \
     workers/loginworker.cpp \
     workers/templateworker.cpp \
-    test/testserver.cpp
+    test/testserver.cpp \
+    workers/listownroomsworker.cpp
 
 HEADERS += \
     hcaserver.h \
@@ -52,7 +53,8 @@ HEADERS += \
     workers/leaveroomworker.h \
     workers/loginworker.h \
     workers/templateworker.h \
-    test/testserver.h
+    test/testserver.h \
+    workers/listownroomsworker.h
 
 DISTFILES += \
     Protocol.txt \
